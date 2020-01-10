@@ -15,6 +15,7 @@ setup(
         author="Job",
         author_email="jobin.jj@gmail.com",
         packages=["cliutils"],
+        scripts=["bin/utilization", "bin/temp"],
         entry_points={
             "console_scripts":[
                 "reload-screens=cliutils:reload_screens",
