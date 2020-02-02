@@ -43,7 +43,6 @@ def getTheme():
         else:
             raise IOError(f"{image_path} does not exist")
         term_colors = pywal.colors.get(image_path)
-        print(image_path, term_colors)
         for k in ['special', 'colors']:
             for key, value in term_colors[k].items():
                 x_colors += f"*.{key}: {value}\n"
