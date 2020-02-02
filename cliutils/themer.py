@@ -3,8 +3,11 @@
 import os
 import yaml
 import subprocess
+import json
+import pywal
+import shutil
 
-COLOR_MAP = {'*.foreground:':'foreground','*.background:':'background',
+COLOR_MAP = {'*.foreground:':'foreground','*.background:':'background','*.cursor:':'cursorColor',
         '*.cursorColor:':'cursorColor','*.color0:':'black', '*.color8:':'bright_black',
         '*.color1:':'red','*.color9:':'bright_red','*.color2:':'green',
         '*.color10:':'bright_green', '*.color3:':'yellow','*.color11:':'bright_yellow',
@@ -16,28 +19,52 @@ ALACRITTY_CONF_PATH = None
 X_COLORS_PATH = '~/.config/themes/.xcolors'
 THEME_PATH = os.path.expanduser('~/.config/themes/current.theme')
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
+WALLPAPER_PATH = os.path.expanduser('~/Pictures/walls')
 
 def getTheme():
-    global COLOR_MAP, PARSED_THEME_PATH
+    global COLOR_MAP, PARSED_THEME_PATH, WALLPAPER_PATH
     with open(os.path.expanduser(THEME_PATH), 'r') as fh:
         theme = yaml.safe_load(fh)
 
     # get x colors and convert 
     # to human readable color keys
-    i=0
-    term_colors = theme['terminal_colors'].split()
     _term_colors = {}
     x_colors = ""
-    while i < len(term_colors):
-        key = term_colors[i].strip()
-        if key != '!':
-            color = term_colors[i+1].strip()
-            x_colors += '{} {}\n'.format(key, color)
-            if key not in COLOR_MAP:
-                print(f'{key} not present in the map')
-            else:
-                _term_colors[ COLOR_MAP[key]] = color
-        i += 2
+    image_path = None
+    if theme['terminal_colors'] == 'pywal':
+        if 'wallpaper' in theme :
+            image_path = os.path.expanduser(os.path.join(WALLPAPER_PATH,theme['wallpaper']))
+        if image_path is None:
+            image_path = os.path.realpath(os.path.expanduser(THEME_PATH))
+            image_path = os.path.basename(image_path).split('.')[0]
+            image_path = os.path.join(WALLPAPER_PATH, image_path)
+        if os.path.exists(image_path):
+            shutil.copy2(image_path, os.path.expanduser('~/Pictures/Wallpaper'))
+        else:
+            raise IOError(f"{image_path} does not exist")
+        term_colors = pywal.colors.get(image_path)
+        print(image_path, term_colors)
+        for k in ['special', 'colors']:
+            for key, value in term_colors[k].items():
+                x_colors += f"*.{key}: {value}\n"
+                if '*.'+key+':' not in COLOR_MAP:
+                    print(f"*.{key}: not in color map: {COLOR_MAP}")
+                else:
+                    _key = COLOR_MAP['*.'+key+':']
+                    _term_colors[_key] = value
+    else:
+        i=0
+        term_colors = theme['terminal_colors'].split()
+        while i < len(term_colors):
+            key = term_colors[i].strip()
+            if key != '!':
+                color = term_colors[i+1].strip()
+                x_colors += '{} {}\n'.format(key, color)
+                if key not in COLOR_MAP:
+                    print(f'{key} not present in the map')
+                else:
+                    _term_colors[ COLOR_MAP[key]] = color
+            i += 2
     x_colors += f"rofi.color-window: #a0{_term_colors['red'][1:]}, {_term_colors['background']}, {_term_colors['background']}\n"
     x_colors += f"rofi.color-normal: #00000000,	{_term_colors['background']}, #00000000, {_term_colors['background']}, {_term_colors['red']}"
 
@@ -48,6 +75,7 @@ def getTheme():
     # Convert varibles in Qtile colors to color codes
     theme['terminal_colors'] = _term_colors
     _theme = dict(theme)
+    _theme['wallpaper'] = image_path
     for key, value in theme.items():
         if key == 'terminal_colors':
             continue
@@ -62,7 +90,8 @@ def main():
 
     # appy x colors
     try:
-        subprocess.call(['xrdb', '-merge', os.path.expanduser(X_COLORS_PATH)])
+        subprocess.call(['xrdb', '-load', os.path.expanduser(X_COLORS_PATH)])
+        subprocess.call(['xrdb', '-merge', os.path.expanduser('~/.Xresources')])
     except subprocess.CalledProcessError as e:
         print(e)
 

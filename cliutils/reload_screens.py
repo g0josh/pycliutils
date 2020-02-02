@@ -4,7 +4,6 @@
 import subprocess
 import os
 import sys
-#import json
 import yaml
 
 POWER_ICONS = {'power':'','reboot':'','lock':'', 
@@ -101,6 +100,7 @@ def main():
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(theme[key])
             subprocess.call(['killall', 'polybar'])
+            subprocess.call(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
             o = subprocess.Popen(['polybar', '-r', 'island'])
             _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
         except subprocess.CalledProcessError as e:
