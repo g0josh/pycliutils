@@ -40,7 +40,7 @@ def _main():
             if ws == curr_group['name']:
                 if pid == screens[str(curr_group['screen'])]['pid']:
                     if result:
-                        result = formats['layoutWs'].replace('%label%',LAYOUT_ICONS[curr_group['layout']]) + separator + result
+                        result = formats['layoutWs'].replace('%label%',LAYOUT_ICONS[curr_group['layout']]) + result
                     else:
                         result = formats['layoutWs'].replace('%label%',LAYOUT_ICONS[curr_group['layout']])
                     result = result + separator + formats['activeWs'].replace('%label%', curr_group['label'])

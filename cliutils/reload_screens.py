@@ -64,8 +64,17 @@ def main():
         theme['occupiedbg'] = theme['bodybg']
     if 'occupiedfg' not in theme:
         theme['occupiedfg'] = theme['bodyfg']
+    if 'bartopborder' not in theme:
+        theme['bartopborder'] = 0
+    if 'barbottomborder' not in theme:
+        theme['barbottomborder'] = 0
+    if 'barrightborder' not in theme:
+        theme['barrightborder'] = 0
+    if 'barleftborder' not in theme:
+        theme['barleftborder'] = 0
     formats = {}
-    formats['layoutWs'] = f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["wspadding"]}%label%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['layoutWs'] = f'%{{B#00000000}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["wspadding"]}%label%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    #formats['layoutWs'] = f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["wspadding"]}%label%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['activeWs'] = f'%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["focusedbg"]}}}%{{F{theme["focusedfg"]}}}{" "*theme["wspadding"]}%label%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['activeWsOther'] = f'%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["focusedbg"]}}}{" "*theme["wspadding"]}%label%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['occupiedWs'] = f'%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["occupiedbg"]}}}%{{F{theme["occupiedfg"]}}}{" "*theme["wspadding"]}%label%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
@@ -75,8 +84,8 @@ def main():
     
     poly_vars = {}
     # power menu widgets
-    poly_vars["poweropen"]= f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{POWER_ICONS["power"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
-    poly_vars['powerclose']= f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars["poweropen"]= f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{POWER_ICONS["power"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B#00000000}}%{{F{theme["titlebg"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars['powerclose']= f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B#00000000}}%{{F{theme["titlebg"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     poly_vars['reboot']= f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["reboot"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     poly_vars['poweroff']= f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["power"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     poly_vars['logout']= f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["logout"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'

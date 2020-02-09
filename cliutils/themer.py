@@ -19,7 +19,7 @@ ALACRITTY_CONF_PATH = None
 X_COLORS_PATH = '~/.config/themes/.xcolors'
 THEME_PATH = os.path.expanduser('~/.config/themes/current.theme')
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
-WALLPAPER_PATH = os.path.expanduser('~/Pictures/walls')
+WALLPAPER_PATH = os.path.expanduser('~/.config/themes/walls')
 
 def getTheme():
     global COLOR_MAP, PARSED_THEME_PATH, WALLPAPER_PATH
@@ -31,17 +31,17 @@ def getTheme():
     _term_colors = {}
     x_colors = ""
     image_path = None
+    if 'wallpaper' in theme :
+        image_path = os.path.expanduser(os.path.join(WALLPAPER_PATH,theme['wallpaper']))
+    if image_path is None:
+        image_path = os.path.realpath(os.path.expanduser(THEME_PATH))
+        image_path = os.path.basename(image_path).split('.')[0]
+        image_path = os.path.join(WALLPAPER_PATH, image_path)
+    if os.path.exists(image_path):
+        shutil.copy2(image_path, os.path.expanduser('~/Pictures/Wallpaper'))
+    else:
+        raise IOError(f"{image_path} does not exist")
     if theme['terminal_colors'] == 'pywal':
-        if 'wallpaper' in theme :
-            image_path = os.path.expanduser(os.path.join(WALLPAPER_PATH,theme['wallpaper']))
-        if image_path is None:
-            image_path = os.path.realpath(os.path.expanduser(THEME_PATH))
-            image_path = os.path.basename(image_path).split('.')[0]
-            image_path = os.path.join(WALLPAPER_PATH, image_path)
-        if os.path.exists(image_path):
-            shutil.copy2(image_path, os.path.expanduser('~/Pictures/Wallpaper'))
-        else:
-            raise IOError(f"{image_path} does not exist")
         term_colors = pywal.colors.get(image_path)
         for k in ['special', 'colors']:
             for key, value in term_colors[k].items():
