@@ -14,8 +14,8 @@ COLOR_MAP = {'*.foreground:':'foreground','*.background:':'background','*.cursor
         '*.color4:':'blue', '*.color12:':'bright_blue', '*.color5:':'magenta',
         '*.color13:':'bright_magenta', '*.color6:':'cyan', '*.color14:':'bright_cyan',
         '*.color7:':'white','*.color15:':'bright_white'}
-#ALACRITTY_CONF_PATH = os.path.expanduser('~/.config/alacritty/alacritty.yml')
-ALACRITTY_CONF_PATH = None
+ALACRITTY_CONF_PATH = os.path.expanduser('~/.config/alacritty/alacritty.yml')
+#ALACRITTY_CONF_PATH = None
 X_COLORS_PATH = '~/.config/themes/.xcolors'
 THEME_PATH = os.path.expanduser('~/.config/themes/current.theme')
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
@@ -96,6 +96,9 @@ def main():
 
     #apply alacritty colors
     if ALACRITTY_CONF_PATH is None:
+        return
+    if !os.path.exists(ALACRITTY_CONF_PATH):
+        print("Invalid Alacritty path : {}".format(ALACRITTY_CONF_PATH))
         return
     with open(ALACRITTY_CONF_PATH, 'r') as fh:
         ala_conf = yaml.safe_load(fh)
