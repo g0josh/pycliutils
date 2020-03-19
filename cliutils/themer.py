@@ -97,7 +97,7 @@ def main():
     #apply alacritty colors
     if ALACRITTY_CONF_PATH is None:
         return
-    if !os.path.exists(ALACRITTY_CONF_PATH):
+    if not os.path.exists(ALACRITTY_CONF_PATH):
         print("Invalid Alacritty path : {}".format(ALACRITTY_CONF_PATH))
         return
     with open(ALACRITTY_CONF_PATH, 'r') as fh:
