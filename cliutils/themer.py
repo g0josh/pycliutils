@@ -71,15 +71,36 @@ def getTheme():
     with open(os.path.expanduser(X_COLORS_PATH), 'w') as fh:
         fh.write(x_colors)
 
-    # Convert varibles in Qtile colors to color codes
+    # Convert color varibles to color codes
     theme['terminal_colors'] = _term_colors
     _theme = dict(theme)
     _theme['wallpaper'] = image_path
+    if "gradient" in _theme:
+        del _theme['gradient']
     for key, value in theme.items():
         if key == 'terminal_colors':
             continue
-        if value in _term_colors:
+        if key == "gradient" and value is not None:
+            i = 0
+            while i < 7:
+                if i < len(value):
+                    _theme["gradient"+str(i+1)+"title"] = _term_colors[ value[i] ]
+                    _theme["gradient"+str(i+1)+"body"] = _term_colors[ value[i] ]
+                else:
+                    _theme["gradient"+str(i+1)+"title"] = _term_colors[ value[-1] ]
+                    _theme["gradient"+str(i+1)+"body"] = _term_colors[ value[-1] ]
+                i += 1
+        elif value in _term_colors:
             _theme[key] = _term_colors[value]
+
+    #set up colors if nor gradients
+    if "gradient" not in theme:
+        i = 0
+        while i < 7:
+            _theme["gradient"+str(i+1)+"title"] = _theme["titlebg"]
+            _theme["gradient"+str(i+1)+"body"] = _theme["bodybg"]
+            i += 1
+
     with open(PARSED_THEME_PATH, 'w') as fh:
         yaml.dump(_theme, fh, default_flow_style=False)
     return _theme
