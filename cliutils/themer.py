@@ -6,6 +6,7 @@ import subprocess
 import json
 import pywal
 import shutil
+import cv2
 
 COLOR_MAP = {'*.foreground:':'foreground','*.background:':'background','*.cursor:':'cursorColor',
         '*.cursorColor:':'cursorColor','*.color0:':'black', '*.color8:':'bright_black',
@@ -39,6 +40,13 @@ def getTheme():
         image_path = os.path.join(WALLPAPER_PATH, image_path)
     if os.path.exists(image_path):
         shutil.copy2(image_path, os.path.expanduser('~/Pictures/Wallpaper'))
+        img = cv2.imread(image_path)
+        bImg = cv2.blur(img, (600, 600))
+        success, buffer = cv2.imencode(".jpg",bImg)
+        if success:
+            buffer.tofile(os.path.expanduser('~/Pictures/BlurredWallpaper'))
+        else:
+            print("Error while blurring wallpaper : ", sucess)
     else:
         raise IOError(f"{image_path} does not exist")
     if theme['terminal_colors'] == 'pywal':
