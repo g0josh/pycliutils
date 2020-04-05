@@ -42,11 +42,14 @@ def getTheme():
         shutil.copy2(image_path, os.path.expanduser('~/Pictures/Wallpaper'))
         img = cv2.imread(image_path)
         bImg = cv2.blur(img, (600, 600))
-        success, buffer = cv2.imencode(".jpg",bImg)
-        if success:
-            buffer.tofile(os.path.expanduser('~/Pictures/BlurredWallpaper'))
+        lImg = cv2.resize(img, (2560, 1080))
+        bSuccess, bBuffer = cv2.imencode(".jpg", bImg)
+        lSuccess, lBuffer = cv2.imencode(".jpg", lImg)
+        if bSuccess and lSuccess:
+            bBuffer.tofile(os.path.expanduser('~/Pictures/BlurredWallpaper'))
+            lBuffer.tofile(os.path.expanduser('~/Pictures/Lockscreen'))
         else:
-            print("Error while blurring wallpaper : ", sucess)
+            print("Error while blurring/resizing wallpaper : ", sucess)
     else:
         raise IOError(f"{image_path} does not exist")
     if theme['terminal_colors'] == 'pywal':
