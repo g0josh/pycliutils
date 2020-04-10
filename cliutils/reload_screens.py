@@ -92,6 +92,8 @@ def main():
     lan1, lan2, wlan = getInterfaces()
     connected = setupMonitors()
     _connected = {}
+    subprocess.call(['killall', 'polybar'])
+    subprocess.call(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
     for i, monitor in enumerate(connected):
         try:
             os.environ['POLY_MONITOR'] = monitor
@@ -107,9 +109,7 @@ def main():
             for key in theme:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(theme[key])
-            subprocess.call(['killall', 'polybar'])
-            subprocess.call(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
-            o = subprocess.Popen(['polybar', '-r', 'island'])
+            o = subprocess.Popen(['polybar', '-r', os.environ['WM']])
             _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
         except subprocess.CalledProcessError as e:
             print(e.output.decode().strip())

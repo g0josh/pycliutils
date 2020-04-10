@@ -16,8 +16,8 @@ COLOR_MAP = {'*.foreground:':'foreground','*.background:':'background','*.cursor
         '*.color13:':'bright_magenta', '*.color6:':'cyan', '*.color14:':'bright_cyan',
         '*.color7:':'white','*.color15:':'bright_white'}
 ALACRITTY_CONF_PATH = os.path.expanduser('~/.config/alacritty/alacritty.yml')
-#ALACRITTY_CONF_PATH = None
-X_COLORS_PATH = '~/.config/themes/.xcolors'
+X_COLORS_PATH = os.path.expanduser('~/.config/themes/.xcolors')
+WAL_COLORS_PATH = os.path.expanduser('~/.cache/wal')
 THEME_PATH = os.path.expanduser('~/.config/themes/current.theme')
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
 WALLPAPER_PATH = os.path.expanduser('~/.config/themes/walls')
@@ -79,8 +79,9 @@ def getTheme():
     x_colors += f"rofi.color-normal: #00000000,	{_term_colors['background']}, #00000000, {_term_colors['background']}, {_term_colors['red']}"
 
     # Write x colors to a file 
-    with open(os.path.expanduser(X_COLORS_PATH), 'w') as fh:
+    with open(X_COLORS_PATH, 'w') as fh:
         fh.write(x_colors)
+    
 
     # Convert color varibles to color codes
     theme['terminal_colors'] = _term_colors
@@ -104,13 +105,26 @@ def getTheme():
         elif value in _term_colors:
             _theme[key] = _term_colors[value]
 
-    #set up colors if nor gradients
+    #set up colors if not gradients
     if "gradient" not in theme:
         i = 0
         while i < 7:
             _theme["gradient"+str(i+1)+"title"] = _theme["titlebg"]
             _theme["gradient"+str(i+1)+"body"] = _theme["bodybg"]
             i += 1
+
+    #create colors file for vscode
+    vc_colors = ["" for x in range(16)]
+    for i, name in enumerate(["black","red","green","yellow","blue","magenta","cyan","white"]):
+        vc_colors[i] = theme['terminal_colors'][name]
+        vc_colors[i+8] = theme['terminal_colors']['bright_'+name]
+
+        #vc_colors += theme['terminal_colors'][name] + '\n' + theme['terminal_colors']['bright_'+name] + '\n'
+    vc_colors = "\n".join(vc_colors)
+    if not os.path.exists(WAL_COLORS_PATH):
+        os.makedirs(WAL_COLORS_PATH)
+    with open(os.path.join(WAL_COLORS_PATH, "colors"), 'w') as f:
+        f.write(vc_colors)
 
     with open(PARSED_THEME_PATH, 'w') as fh:
         yaml.dump(_theme, fh, default_flow_style=False)
@@ -121,7 +135,7 @@ def main():
 
     # appy x colors
     try:
-        subprocess.call(['xrdb', '-load', os.path.expanduser(X_COLORS_PATH)])
+        subprocess.call(['xrdb', '-load', X_COLORS_PATH])
         subprocess.call(['xrdb', '-merge', os.path.expanduser('~/.Xresources')])
     except subprocess.CalledProcessError as e:
         print(e)
