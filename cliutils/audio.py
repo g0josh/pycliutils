@@ -90,6 +90,7 @@ def routeInputsToSink(sink='next'):
     except CalledProcessError as e:
         print("Error while getting sink inputs: ", e)
         return False
+    Popen("pacmd set-default-sink {}".format(sinks[toSink]).split())
     for inp in inputs:
         cmd = f'pactl move-sink-input {inp} {sinks[toSink]}'
         Popen(cmd.split())
