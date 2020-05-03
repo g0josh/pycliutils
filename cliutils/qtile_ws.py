@@ -40,19 +40,19 @@ def _main():
             if ws == curr_group['name']:
                 if pid == screens[str(curr_group['screen'])]['pid']:
                     if result:
-                        result = formats['layoutWs'].replace('%label%',LAYOUT_ICONS[curr_group['layout']]) + result
+                        result = formats['layoutWs'].replace('%icon%',LAYOUT_ICONS[curr_group['layout']]) + result
                     else:
-                        result = formats['layoutWs'].replace('%label%',LAYOUT_ICONS[curr_group['layout']])
-                    result = result + separator + formats['activeWs'].replace('%label%', curr_group['label'])
+                        result = formats['layoutWs'].replace('%icon%',LAYOUT_ICONS[curr_group['layout']])
+                    result = result + separator + formats['activeWs'].replace('%name% %icon%', curr_group['label'])
                 else:
-                    result = result + separator + formats['activeWsOther'].replace('%label%', curr_group['label'])
+                    result = result + separator + formats['activeWsOther'].replace('%name% %icon%', curr_group['label'])
             elif groups[ws]['screen'] is not None:
                 if pid == screens[str(groups[ws]['screen'])]['pid']:
-                    result = result + separator + formats['visibleWs'].replace('%label%', groups[ws]['label'])
+                    result = result + separator + formats['visibleWs'].replace('%name% %icon%', groups[ws]['label'])
                 else:
-                    result = result + separator + formats['visibleWsOther'].replace('%label%', groups[ws]['label'])
+                    result = result + separator + formats['visibleWsOther'].replace('%name% %icon%', groups[ws]['label'])
             elif client.groups()[ws]['windows']:
-                result = result + separator + formats['occupiedWs'].replace('%label%', groups[ws]['label'])
+                result = result + separator + formats['occupiedWs'].replace('%name% %icon%', groups[ws]['label'])
         return result
     elif cmd == 'set':
         if not set_ws:

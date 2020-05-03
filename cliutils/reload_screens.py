@@ -6,7 +6,7 @@ import os
 import sys
 import yaml
 
-POWER_ICONS = {'power':'%{T3}%{T-}','reboot':'%{T3}%{T-}','lock':'%{T3}%{T-}', 
+POWER_ICONS = {'power':'%{T3}%{T-}','reboot':'%{T3}%{T-}','lock':'%{T3}%{T-}',
         'logout':'%{T3}%{T-}', 'cancel':'%{T3}%{T-}'}
 POLY_INFO_PATH = '/tmp/polybar_info'
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
@@ -73,14 +73,14 @@ def main():
     if 'barleftborder' not in theme:
         theme['barleftborder'] = 0
     formats = {}
-    formats['layoutWs'] = f'%{{B#00000000}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["wspadding"]}%label%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    formats['activeWs'] = f'%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["focusedbg"]}}}%{{F{theme["focusedfg"]}}}{" "*theme["wspadding"]}%{{T3}}%label%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    formats['activeWsOther'] = f'%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["focusedbg"]}}}{" "*theme["wspadding"]}%{{T3}}%label%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    formats['occupiedWs'] = f'%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["occupiedbg"]}}}%{{F{theme["occupiedfg"]}}}{" "*theme["wspadding"]}%{{T3}}%label%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    formats['visibleWs'] = f'%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["altbg"]}}}%{{F{theme["altfg"]}}}{" "*theme["wspadding"]}%{{T3}}%label%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    formats['visibleWsOther'] = f'%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["altbg"]}}}{" "*theme["wspadding"]}%{{T3}}%label%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    formats['urgetWs'] = f'%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["urgentbg"]}}}%{{F{theme["urgentfg"]}}}{" "*theme["wspadding"]}%{{T3}}%label%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    
+    formats['layoutWs'] = f'%{{B#00000000}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["wspadding"]}%icon%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['activeWs'] = f'%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["focusedbg"]}}}%{{F{theme["focusedfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['activeWsOther'] = f'%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["focusedbg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['occupiedWs'] = f'%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["occupiedbg"]}}}%{{F{theme["occupiedfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['visibleWs'] = f'%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["altbg"]}}}%{{F{theme["altfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['visibleWsOther'] = f'%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["altbg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["bodybg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['urgentWs'] = f'%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["urgentbg"]}}}%{{F{theme["urgentfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+
     poly_vars = {}
     # power menu widgets
     poly_vars["poweropen"]= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{POWER_ICONS["power"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B#00000000}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
@@ -109,6 +109,9 @@ def main():
             for key in theme:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(theme[key])
+            for key in formats:
+                _key = str('POLY_'+key.upper())
+                os.environ[_key] = str(formats[key])
             o = subprocess.Popen(['polybar', '-r', os.environ['WM']])
             _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
         except subprocess.CalledProcessError as e:
