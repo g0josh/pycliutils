@@ -29,6 +29,7 @@ def getSinks(getCurrent=False):
 
     return sinks, currSink
 
+
 def muteAllSinks(cmd=1):
     '''
     cmd
@@ -49,6 +50,7 @@ def muteAllSinks(cmd=1):
 
     return True
 
+
 def changeVolume(value="+5%"):
     value = value.strip()
     if value == "0":
@@ -62,6 +64,7 @@ def changeVolume(value="+5%"):
         volCmd = f'pactl set-sink-volume {sink} {value}'.split()
         Popen(volCmd)
     return True
+
 
 def routeInputsToSink(sink='next'):
     '''
@@ -97,7 +100,7 @@ def routeInputsToSink(sink='next'):
     return True
 
 
-def main():
+def main(mute=-1, vol=False, route=False):
     parser = argparse.ArgumentParser(
         description="A command line utility to change all the audio sink input to the next/prev sink. Requires pulseaudio runnning")
     parser.add_argument('--vol', '-v', default=False,
@@ -108,18 +111,22 @@ def main():
                         help="route all sink inpute to the next/prev/specific sink")
     args = parser.parse_args()
 
-    if all([args.mute == -1, args.vol == False, args.route == False]):
-        print("No command specified. Do 'audio -h' to learn how to use this utility")
+    _mute = mute if args.mute == -1 else args.mute
+    _vol = vol if args.vol == False else args.vol
+    _route = route if args.route == False else args.route
+
+    if all([_mute == -1, _vol == False, _route == False]):
+        print("No command specified.")
         return
 
-    if args.mute != -1:
-        if not muteAllSinks(args.mute):
+    if _mute != -1:
+        if not muteAllSinks(_mute):
             print("Command failed")
-    if args.vol != False:
-        if not changeVolume(args.vol):
+    if _vol != False:
+        if not changeVolume(_vol):
             print("Command failed")
-    if args.route != False:
-        if not routeInputsToSink(args.route):
+    if _route != False:
+        if not routeInputsToSink(_route):
             print("Command failed")
 
 
