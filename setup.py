@@ -7,7 +7,7 @@ with open(path.join(cwd, 'README.md'), 'r') as f:
 
 setup(
         name="cliutils",
-        version="2.1.0",
+        version="2.2.0",
         description="A metapackage for all the common CLI utils on jMach2",
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -22,7 +22,7 @@ setup(
                 "themer=cliutils:themer",
                 "qtile-ws=cliutils:qtile_ws",
                 "i3-change-wall=cliutils:i3_change_wall",
-                "audio=cliutils:audio"
+                "aucli=cliutils:aucli"
                 ]
             },
         python_requires=">=3.6, <4",

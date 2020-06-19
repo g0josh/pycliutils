@@ -49,7 +49,7 @@ def getTheme():
             bBuffer.tofile(os.path.expanduser('~/Pictures/BlurredWallpaper'))
             lBuffer.tofile(os.path.expanduser('~/Pictures/Lockscreen'))
         else:
-            print("Error while blurring/resizing wallpaper : ", sucess)
+            print("Error while blurring/resizing wallpaper : ", bSuccess, lSuccess)
     else:
         raise IOError(f"{image_path} does not exist")
     if theme['terminal_colors'] == 'pywal':
@@ -82,9 +82,15 @@ def getTheme():
     with open(X_COLORS_PATH, 'w') as fh:
         fh.write(x_colors)
     
+    # remove the '#' from colors for qtile to work properly
+    cleaned_term_colors = _term_colors
+    # for k, v in _term_colors.items():
+    #     if isinstance(v, str) and v.startswith('#'):
+    #         v = v[1:]
+    #     cleaned_term_colors[k] = v
 
-    # Convert color varibles to color codes
-    theme['terminal_colors'] = _term_colors
+    # Convert color variables to color codes
+    theme['terminal_colors'] = cleaned_term_colors
     _theme = dict(theme)
     _theme['wallpaper'] = image_path
     if "gradient" in _theme:
@@ -96,14 +102,14 @@ def getTheme():
             i = 0
             while i < 7:
                 if i < len(value):
-                    _theme["gradient"+str(i+1)+"title"] = _term_colors[ value[i] ]
-                    _theme["gradient"+str(i+1)+"body"] = _term_colors[ value[i] ]
+                    _theme["gradient"+str(i+1)+"title"] = cleaned_term_colors[ value[i] ]
+                    _theme["gradient"+str(i+1)+"body"] = cleaned_term_colors[ value[i] ]
                 else:
-                    _theme["gradient"+str(i+1)+"title"] = _term_colors[ value[-1] ]
-                    _theme["gradient"+str(i+1)+"body"] = _term_colors[ value[-1] ]
+                    _theme["gradient"+str(i+1)+"title"] = cleaned_term_colors[ value[-1] ]
+                    _theme["gradient"+str(i+1)+"body"] = cleaned_term_colors[ value[-1] ]
                 i += 1
-        elif value in _term_colors:
-            _theme[key] = _term_colors[value]
+        elif value in cleaned_term_colors:
+            _theme[key] = cleaned_term_colors[value]
 
     #set up colors if not gradients
     if "gradient" not in theme:

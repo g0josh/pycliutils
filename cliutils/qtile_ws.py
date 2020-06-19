@@ -5,7 +5,7 @@ import yaml
 import subprocess
 import argparse
 
-from libqtile.command import Client
+from libqtile.command_client import InteractiveCommandClient as Client
 
 LAYOUT_ICONS = {'columns':'HHH','monadtall':'[]=',
         'monadwide':'TTT','max':'[ ]','treetab':'|[]'}
