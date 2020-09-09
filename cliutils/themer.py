@@ -93,8 +93,6 @@ def getTheme():
     theme['terminal_colors'] = cleaned_term_colors
     _theme = dict(theme)
     _theme['wallpaper'] = image_path
-    if "gradient" in _theme:
-        del _theme['gradient']
     for key, value in theme.items():
         if key == 'terminal_colors':
             continue
@@ -113,11 +111,18 @@ def getTheme():
 
     #set up colors if not gradients
     if "gradient" not in theme:
+        _theme['gradienttitlefg'] = _theme["titlefg"]
+        _theme['gradientbodyfg'] = _theme["bodyfg"]
         i = 0
         while i < 7:
             _theme["gradient"+str(i+1)+"title"] = _theme["titlebg"]
             _theme["gradient"+str(i+1)+"body"] = _theme["bodybg"]
             i += 1
+    else:
+        _theme['gradienttitlefg'] =_theme['gradientbodyfg'] = _theme['gradientfg'] if 'gradientfg' in _theme else _theme['titlefg']
+        del _theme['gradient']
+        if 'gradientfg' in _theme:
+            del _theme['gradientfg']
 
     #create colors file for vscode
     vc_colors = ["" for x in range(16)]
