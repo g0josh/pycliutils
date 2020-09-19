@@ -7,7 +7,7 @@ with open(path.join(cwd, 'README.md'), 'r') as f:
 
 setup(
         name="cliutils",
-        version="2.2.0",
+        version="2.2.1",
         description="A metapackage for all the common CLI utils on jMach2",
         long_description=long_description,
         long_description_content_type="text/markdown",

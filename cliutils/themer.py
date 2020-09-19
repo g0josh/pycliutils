@@ -119,10 +119,8 @@ def getTheme():
             _theme["gradient"+str(i+1)+"body"] = _theme["bodybg"]
             i += 1
     else:
-        _theme['gradienttitlefg'] =_theme['gradientbodyfg'] = _theme['gradientfg'] if 'gradientfg' in _theme else _theme['titlefg']
+        _theme['gradienttitlefg'] =_theme['gradientbodyfg'] = _theme['gradient']['fg'] if 'fg' in theme['gradient'] else _theme['titlefg']
         del _theme['gradient']
-        if 'gradientfg' in _theme:
-            del _theme['gradientfg']
 
     #create colors file for vscode
     vc_colors = ["" for x in range(16)]

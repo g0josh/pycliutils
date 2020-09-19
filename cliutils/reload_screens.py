@@ -5,25 +5,23 @@ import subprocess
 import os
 import sys
 import yaml
+import argparse
 
 POWER_ICONS = {'power':'%{T3}%{T-}','reboot':'%{T3}%{T-}','lock':'%{T3}%{T-}',
         'logout':'%{T3}%{T-}', 'cancel':'%{T3}%{T-}'}
-POLY_INFO_PATH = '/tmp/polybar_info'
+# POLY_INFO_PATH = '/tmp/polybar_info'
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
 
 def getInterfaces():
-    lan1 = lan2 = wlan = ""
+    interfaces = {'lan':[], 'wlan':[]}
     for w in os.listdir('/sys/class/net'):
         if w.startswith('w'):
-            wlan = w
+            interfaces['wlan'].append(w)
         elif w.startswith('e'):
-            if lan1:
-                lan2 = w
-            else:
-                lan1 = w
-    return lan1, lan2, wlan
+            interfaces['lan'].append(w)
+    return interfaces
 
-def setupMonitors():
+def setupMonitors(exec=False):
     try:
         o = subprocess.check_output(['xrandr']).decode()
     except subprocess.CalledProcessError as e:
@@ -46,19 +44,23 @@ def setupMonitors():
             connected.append(name)
         elif 'disconnected' in e:
             cmd += ['--output', name, '--off']
-
-    try:
-        if sys.version_info[0] < 3:
-            subprocess.call(cmd)
-        else:
-            subprocess.run(cmd)
-    except subprocess.CalledProcessError as e:
-        print(e.output.decode().strip())
-    else:
-        return connected
+    if exec:
+        try:
+            if sys.version_info[0] < 3:
+                subprocess.call(cmd)
+            else:
+                subprocess.run(cmd)
+        except subprocess.CalledProcessError as e:
+            print(e.output.decode().strip())
+    return connected
 
 def main():
-    with open(PARSED_THEME_PATH, 'r') as fh:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--exec-xrandr", "-x", action='store_true', help="Discover and setup monitors")
+    parser.add_argument('--theme-path', '-t', type=str, default=PARSED_THEME_PATH, help="Path to the parsed theme file")
+    args = parser.parse_args()
+
+    with open(args.theme_path, 'r') as fh:
         theme = yaml.safe_load(fh)
     if 'occupiedbg' not in theme:
         theme['occupiedbg'] = theme['bodybg']
@@ -89,12 +91,12 @@ def main():
     poly_vars['poweroff']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["power"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     poly_vars['logout']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["logout"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     poly_vars['lock']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["lock"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
-    lan1, lan2, wlan = getInterfaces()
-    connected = setupMonitors()
+    interfaces = getInterfaces()
+    connected = setupMonitors(args.exec_xrandr)
     _connected = {}
     subprocess.call(['killall', 'polybar'])
-    subprocess.call(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
-    for i, monitor in enumerate(connected):
+    subprocess.Popen(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
+    for monitor in connected:
         try:
             os.environ['POLY_MONITOR'] = monitor
             os.environ['POLY_POWER_OPEN'] = poly_vars['poweropen']
@@ -103,22 +105,25 @@ def main():
             os.environ['POLY_REBOOT'] = poly_vars['reboot']
             os.environ['POLY_LOGOUT'] = poly_vars['logout']
             os.environ['POLY_LOCK'] = poly_vars['lock']
-            os.environ['POLY_WLAN'] = wlan
-            os.environ['POLY_LAN1'] = lan1
-            os.environ['POLY_LAN2'] = lan2
+            for index, wlan in enumerate(interfaces['wlan']):
+                os.environ[f'POLY_WLAN{index+1}'] = wlan
+            for index, lan in enumerate(interfaces['lan']):
+                os.environ[f'POLY_LAN{index+1}'] = lan
+                
             for key in theme:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(theme[key])
             for key in formats:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(formats[key])
-            o = subprocess.Popen(['polybar', '-r', os.environ['WM']])
-            _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
-        except subprocess.CalledProcessError as e:
-            print(e.output.decode().strip())
-    with open(POLY_INFO_PATH, 'w') as fh:
-        yaml.dump({'formats':formats,
-            'screens':_connected,'separator':theme['moduleseparator']}, fh)
+            #o = subprocess.Popen(['polybar', '-r', os.environ['WM']])
+            o = subprocess.Popen(['polybar', '-r', 'i3']) 
+            #_connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
+        except Exception as e:
+            print(e)
+    #with open(POLY_INFO_PATH, 'w') as fh:
+    #    yaml.dump({'formats':formats,
+    #        'screens':_connected,'separator':theme['moduleseparator']}, fh)
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,11 @@
 #!/bin/bash
 
 #CT=`sensors|grep CPUTIN|awk '{print $2}'`
-CT=`sensors|grep Tdie|awk '{print $2}'`
-GT=`nvidia-smi -q -d TEMPERATURE |grep  "GPU Current Temp"| awk '{print $5}'`
-
-echo "${CT:1:2}|${GT}"
+CT=`sensors|grep "Package id 0"|awk '{print $4}'`
+if ! command -v nvidia-smi &> /dev/null
+then
+    echo "${CT:1:2}|0"
+else
+    GT=`nvidia-smi -q -d TEMPERATURE |grep  "GPU Current Temp"| awk '{print $5}'`
+    echo "${CT:1:2}|${GT}"
+fi
