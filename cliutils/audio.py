@@ -207,7 +207,7 @@ def _cliEntry():
     parser = argparse.ArgumentParser(
         description="A command line utility to manage pulse audio. Requires pulseaudio runnning")
     parser.add_argument('--vol', '-v', default=None, type=str,
-                        help="set volume to the give value (percent recommended say '5%%'). Incremental values can be given as +5%% or -10%%")
+                        help="set volume (percent value recommended, say '5%%'). Incremental values can be given as +5%% or -10%%")
     parser.add_argument('--mute', '-m', default=None, type=int,
                         help="Mute audio, 0 - Unmute, 1 - Mute, 2 - toggle")
     parser.add_argument('--activate', '-a', default=None, type=str,
