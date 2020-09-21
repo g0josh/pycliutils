@@ -3,9 +3,12 @@
 from subprocess import check_output, Popen, CalledProcessError
 import json
 import os
+import yaml
 
 EMPTY_WS_WALLPAPER_PATH = os.path.expanduser("~/Pictures/Wallpaper")
 OCCUPIED_WS_WALLPAPER_PATH = os.path.expanduser("~/Pictures/BlurredWallpaper")
+THEME_PATH = os.path.expanduser("~/.config/themes/.theme")
+
 
 def GetCurrWs():
     try:
@@ -21,11 +24,28 @@ def GetCurrWs():
 
     return False, False
 
+
+def blurWall():
+    try:
+        with open(THEME_PATH, 'r') as f:
+            theme = yaml.safe_load(f)
+    except Exception as e:
+        print(e)
+        return False
+    if 'blurWall' in theme and theme['blurWall']:
+        return True
+    return False
+
+
 def changeWal(wallPath):
     cmd = "feh --bg-fill " + wallPath
     Popen(cmd.split())
 
+
 def main():
+    if not blurWall():
+        return
+
     currWs, monitor = GetCurrWs()
     if not currWs:
         return
@@ -55,6 +75,7 @@ def main():
                 return True
             else:
                 changeWal(EMPTY_WS_WALLPAPER_PATH)
+
 
 if __name__ == "__main__":
     main()
