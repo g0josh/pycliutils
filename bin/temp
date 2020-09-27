@@ -4,7 +4,7 @@
 CT=`sensors|grep "Package id 0"|awk '{print $4}'`
 if ! command -v nvidia-smi &> /dev/null
 then
-    echo "${CT:1:2}|0"
+    echo "${CT:1:2}°C"
 else
     GT=`nvidia-smi -q -d TEMPERATURE |grep  "GPU Current Temp"| awk '{print $5}'`
     echo "${CT:1:2}|${GT}"
