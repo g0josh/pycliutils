@@ -7,7 +7,7 @@ with open(path.join(cwd, 'README.md'), 'r') as f:
 
 setup(
         name="cliutils",
-        version="2.2.1",
+        version="2.2.2",
         description="A metapackage for all the common CLI utils on jMach2",
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -19,10 +19,10 @@ setup(
         entry_points={
             "console_scripts":[
                 "reload-screens=cliutils:reload_screens",
-                "themer=cliutils:themer",
-                "qtile-ws=cliutils:qtile_ws",
-                "i3-change-wall=cliutils:i3_change_wall",
-                "aucli=cliutils:aucli"
+                "themer=cliutils:themer.main",
+                "qtile-ws=cliutils:qtile_ws.main",
+                "i3-change-wall=cliutils:i3_change_wall.main",
+                "aucli=cliutils:audio._cliEntry"
                 ]
             },
         python_requires=">=3.6, <4",
