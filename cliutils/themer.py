@@ -137,10 +137,10 @@ def getTheme():
 
     with open(PARSED_THEME_PATH, 'w') as fh:
         yaml.dump(_theme, fh, default_flow_style=False)
-    return _theme
+    return _theme, image_path
 
 def main():
-    theme = getTheme()
+    theme, wallpaper_path = getTheme()
 
     # appy x colors
     try:
@@ -167,6 +167,13 @@ def main():
             ala_conf['colors']['normal'][key] = theme['terminal_colors'][key]
     with open(ALACRITTY_CONF_PATH, 'w') as fh:
         yaml.dump(ala_conf, fh, default_flow_style=False)
+
+    # set wallpaper
+    print(wallpaper_path)
+    try:
+        subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file:///{}'.format(wallpaper_path)])
+    except Exception as e:
+        print(e)
 
 if __name__ == '__main__':
     main()
