@@ -7,7 +7,7 @@ with open(path.join(cwd, 'README.md'), 'r') as f:
 
 setup(
         name="cliutils",
-        version="2.2.3",
+        version="2.2.4",
         description="A metapackage for all the common CLI utils on jMach2",
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -18,7 +18,7 @@ setup(
         scripts=["bin/utilization", "bin/temp"],
         entry_points={
             "console_scripts":[
-                "reload-screens=cliutils:reload_screens",
+                "reload-screens=cliutils:reload_screens.main",
                 "themer=cliutils:themer.main",
                 "qtile-ws=cliutils:qtile_ws.main",
                 "i3-change-wall=cliutils:i3_change_wall.main",

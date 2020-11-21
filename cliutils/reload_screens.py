@@ -74,12 +74,30 @@ def main():
         theme['barrightborder'] = 0
     if 'barleftborder' not in theme:
         theme['barleftborder'] = 0
+    if 'bottombar' not in theme:
+        theme['bottombar'] = 'false'
+    if 'leftmoduleprefix' not in theme:
+        theme['leftmoduleprefix'] = '█'
+    if 'leftmodulesuffix' not in theme:
+        theme['leftmodulesuffix'] = '█'
+    if 'rightmoduleprefix' not in theme:
+        theme['rightmoduleprefix'] = '█'
+    if 'rightmodulesuffix' not in theme:
+        theme['rightmodulesuffix'] = '█'
+
     formats = {}
     formats['layoutWs'] = f'%{{B#00000000}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["wspadding"]}%icon%{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['activeWs'] = f'%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["focusedbg"]}}}%{{F{theme["focusedfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["focusedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['occupiedWs'] = f'%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["occupiedbg"]}}}%{{F{theme["occupiedfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['visibleWsOther'] = f'%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["altbg"]}}}%{{F{theme["altfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['urgentWs'] = f'%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["urgentbg"]}}}%{{F{theme["urgentfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    
+    formats['timeTitle'] = f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
+    bg = theme['gradient3title'] if 'gradient3title' in theme else theme['titlebg']
+    fg = theme['gradienttitlefg'] if 'gradienttitlefg' in theme else theme['titlefg']
+    formats['utilizationTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    bg = theme['gradient4title'] if 'gradient4title' in theme else theme['titlebg']
+    formats['temperatureTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
 
     poly_vars = {}
     # power menu widgets

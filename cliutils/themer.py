@@ -171,9 +171,12 @@ def main():
     # set wallpaper
     print(wallpaper_path)
     try:
-        subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file:///{}'.format(wallpaper_path)])
+        subprocess.Popen(['feh', '--bg-fill', f'{wallpaper_path}'])
     except Exception as e:
-        print(e)
+        try:
+            subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', f'file:///{wallpaper_path}'])
+        except Exception as e:
+            print(e)
 
 if __name__ == '__main__':
     main()
