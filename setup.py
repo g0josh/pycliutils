@@ -7,7 +7,7 @@ with open(path.join(cwd, 'README.md'), 'r') as f:
 
 setup(
         name="cliutils",
-        version="2.2.4",
+        version="2.3.0",
         description="A metapackage for all the common CLI utils on jMach2",
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -22,9 +22,10 @@ setup(
                 "themer=cliutils:themer.main",
                 "qtile-ws=cliutils:qtile_ws.main",
                 "i3-change-wall=cliutils:i3_change_wall.main",
-                "aucli=cliutils:audio._cliEntry"
+                "aucli=cliutils:audio._cliEntry",
+                "mcc=cliutils:musikcubeClient.main"
                 ]
             },
         python_requires=">=3.6, <4",
-        install_requires=["PyYAML","pywal"]
+        install_requires=["PyYAML","pywal","websockets", "aiohttp"]
         )
