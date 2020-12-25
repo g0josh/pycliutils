@@ -1,16 +1,17 @@
 import uuid
 import asyncio
-import websockets
-import logging
+import subprocess
 from queue import Queue, Empty
 from enum import Enum
 from typing import Optional
 import json
-from threading import Lock
+import time
+import websockets
 from aiohttp import web
 
+TRACK_UPDATE_INTERVAL = 5
 MAX_TRACK_LEN = 20
-CMD_SERVER_PORT = 8000
+CMD_SERVER_PORT = 7907
 MUSIKCUBE_PORT = 7905
 MUSIKCUBE_PASSWORD = "myMusikcubeClient"
 REQUEST_SCHEMA = {
@@ -22,7 +23,10 @@ REQUEST_SCHEMA = {
 }
 
 cmdQueue = Queue()
-currTrack = ""
+currTrack = {
+    'track': '',
+    'updatedAt': time.time()
+}
 
 
 class MusikCubeRequest(Enum):
@@ -73,8 +77,7 @@ async def musikCubeSocket(port: int, device_id: str):
                         req = makeCmd(cmd, {'device_id': device_id})
                         await websocket.send(req)
                         print(f"Sent {req}")
-                    elif not currTrack:
-                        # Get status if for the first time
+                    elif not currTrack['track'] or time.time() - currTrack['updatedAt'] >= TRACK_UPDATE_INTERVAL:
                         req = makeCmd(MusikCubeRequest.PLAYBACK_OVERVIEW,
                                       {'device_id': device_id})
                         await websocket.send(req)
@@ -88,25 +91,31 @@ async def musikCubeSocket(port: int, device_id: str):
                     print(resp)
                     if resp['type'] in ['broadcast', 'response'] and resp['name'] in ['playback_overview_changed', 'get_playback_overview']:
                         if resp['options']['state'] == 'stopped':
-                            currTrack = " "
+                            currTrack = {'track': ' ',
+                                         'updatedAt': time.time()}
                             continue
                         _totalTime = int(
                             resp['options']['playing_duration'])
                         _elapsedTime = int(
                             resp['options']['playing_current_time'])
-                        totalTime = f'{_totalTime//60}:{_totalTime%60}'
-                        elapsedTime = f'{_elapsedTime//60}:{_elapsedTime%60}'
+                        totalTime = f'{_totalTime//60}:{0 if _totalTime%60 < 10 else "" }{_totalTime%60}'
+                        elapsedTime = f'{_elapsedTime//60}:{0 if _elapsedTime%60 < 10 else "" }{_elapsedTime%60}'
                         _track = resp['options']['playing_track']['title']
 
                         if len(_track) < MAX_TRACK_LEN:
-                            track = _track + "" * \
-                                (MAX_TRACK_LEN-len(_track))
+                            track = _track + (" " * \
+                                (MAX_TRACK_LEN-len(_track)))
                         else:
                             track = _track[:MAX_TRACK_LEN-3] + '...'
-                        currTrack = f'{track}   {elapsedTime}/{totalTime}'
+
+                        currTrack = {'track': f'{track}   {elapsedTime}/{totalTime}',
+                                        'updatedAt': time.time()}
                         print(f'current track set to {currTrack}')
+                        subprocess.Popen(['polybar-msg', 'hook', 'musik', '1'])
         except (websockets.exceptions.ConnectionClosedError, OSError):
-            await asyncio.sleep(0.2)
+            currTrack = {'track': ' ', 'updatedAt': time.time()}
+            subprocess.Popen(['polybar-msg', 'hook', 'musik', '1'])
+            await asyncio.sleep(1.0)
 
 
 async def handleRecievedCmd(request):
@@ -125,10 +134,8 @@ async def handleRecievedCmd(request):
         cmdQueue.put(cmd)
         return web.Response(text='ok')
     elif method == 'GET':
-        cmdQueue.put(MusikCubeRequest.PLAYBACK_OVERVIEW)
-        await asyncio.sleep(0.2)
         global currTrack
-        return web.Response(text=currTrack)
+        return web.Response(text=currTrack['track'])
 
 
 async def cmdListener(host: str, port: int):
@@ -147,8 +154,10 @@ async def start():
         cmdListener("localhost", CMD_SERVER_PORT)
     )
 
+
 def main():
     asyncio.run(start())
+
 
 if __name__ == '__main__':
     main()
