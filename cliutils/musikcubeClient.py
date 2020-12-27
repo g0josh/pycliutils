@@ -8,6 +8,7 @@ import json
 import time
 import websockets
 from aiohttp import web
+from argparse import ArgumentParser
 
 TRACK_UPDATE_INTERVAL = 5
 MAX_TRACK_LEN = 20
@@ -27,6 +28,7 @@ currTrack = {
     'track': '',
     'updatedAt': time.time()
 }
+callback = None
 
 
 class MusikCubeRequest(Enum):
@@ -58,13 +60,12 @@ async def musikCubeSocket(port: int, device_id: str):
     while 1:
         try:
             async with websockets.connect(uri) as websocket:
-                global currTrack
+                global currTrack, callback
 
                 # send auth
                 auth = makeCmd(MusikCubeRequest.AUTH, {'options': {
                     'password': MUSIKCUBE_PASSWORD}, 'device_id': device_id})
                 await websocket.send(auth)
-                print("Websocket send auth")
 
                 while 1:
                     # send command if one exists
@@ -76,19 +77,16 @@ async def musikCubeSocket(port: int, device_id: str):
                     if cmd is not None:
                         req = makeCmd(cmd, {'device_id': device_id})
                         await websocket.send(req)
-                        print(f"Sent {req}")
                     elif not currTrack['track'] or time.time() - currTrack['updatedAt'] >= TRACK_UPDATE_INTERVAL:
                         req = makeCmd(MusikCubeRequest.PLAYBACK_OVERVIEW,
                                       {'device_id': device_id})
                         await websocket.send(req)
-                        print(f"Sent {req}")
 
                     try:
                         _resp = await asyncio.wait_for(websocket.recv(), timeout=1.0)
                     except asyncio.exceptions.TimeoutError:
                         continue
                     resp = json.loads(_resp)
-                    print(resp)
                     if resp['type'] in ['broadcast', 'response'] and resp['name'] in ['playback_overview_changed', 'get_playback_overview']:
                         if resp['options']['state'] == 'stopped':
                             currTrack = {'track': ' ',
@@ -103,18 +101,19 @@ async def musikCubeSocket(port: int, device_id: str):
                         _track = resp['options']['playing_track']['title']
 
                         if len(_track) < MAX_TRACK_LEN:
-                            track = _track + (" " * \
-                                (MAX_TRACK_LEN-len(_track)))
+                            track = _track + (" " *
+                                              (MAX_TRACK_LEN-len(_track)))
                         else:
                             track = _track[:MAX_TRACK_LEN-3] + '...'
 
                         currTrack = {'track': f'{track}   {elapsedTime}/{totalTime}',
-                                        'updatedAt': time.time()}
-                        print(f'current track set to {currTrack}')
-                        subprocess.Popen(['polybar-msg', 'hook', 'musik', '1'])
+                                     'updatedAt': time.time()}
+                        if callback:
+                            subprocess.Popen(callback, shell=True)
         except (websockets.exceptions.ConnectionClosedError, OSError):
             currTrack = {'track': ' ', 'updatedAt': time.time()}
-            subprocess.Popen(['polybar-msg', 'hook', 'musik', '1'])
+            if callback:
+                subprocess.Popen(callback, shell=True)
             await asyncio.sleep(1.0)
 
 
@@ -156,6 +155,15 @@ async def start():
 
 
 def main():
+    global callback, TRACK_UPDATE_INTERVAL
+    parser = ArgumentParser(description="CLI for Musikcube")
+    parser.add_argument('--updated-callback', '-c', default=callback,
+                        help='Run any sh command when an update is recieved')
+    parser.add_argument('--update-interval', '-u', default=TRACK_UPDATE_INTERVAL, type=int,
+                        help=f'How often to get updates(in seconds). Default is {TRACK_UPDATE_INTERVAL}')
+    args = parser.parse_args()
+    callback = args.updated_callback
+    TRACK_UPDATE_INTERVAL = args.update_interval
     asyncio.run(start())
 
 
