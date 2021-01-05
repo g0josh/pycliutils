@@ -9,7 +9,7 @@ import argparse
 
 POWER_ICONS = {'power':'%{T3}%{T-}','reboot':'%{T3}%{T-}','lock':'%{T3}%{T-}',
         'logout':'%{T3}%{T-}', 'cancel':'%{T3}%{T-}'}
-# POLY_INFO_PATH = '/tmp/polybar_info'
+POLY_INFO_PATH = '/tmp/polybar_info'
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
 
 def getInterfaces():
@@ -112,7 +112,7 @@ def main():
     _connected = {}
     subprocess.call(['killall', 'polybar'])
     subprocess.Popen(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
-    for monitor in connected:
+    for i, monitor in enumerate(connected):
         try:
             os.environ['POLY_MONITOR'] = monitor
             os.environ['POLY_POWER_OPEN'] = poly_vars['poweropen']
@@ -132,14 +132,14 @@ def main():
             for key in formats:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(formats[key])
-            #o = subprocess.Popen(['polybar', '-r', os.environ['WM']])
-            o = subprocess.Popen(['polybar', '-r', 'i3']) 
-            #_connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
+            o = subprocess.Popen(['polybar', '-r', os.environ['WM']])
+            #o = subprocess.Popen(['polybar', '-r', 'i3']) 
+            _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
         except Exception as e:
             print(e)
-    #with open(POLY_INFO_PATH, 'w') as fh:
-    #    yaml.dump({'formats':formats,
-    #        'screens':_connected,'separator':theme['moduleseparator']}, fh)
+    with open(POLY_INFO_PATH, 'w') as fh:
+        yaml.dump({'formats':formats,
+            'screens':_connected,'separator':theme['moduleseparator']}, fh)
 
 if __name__ == '__main__':
     main()
