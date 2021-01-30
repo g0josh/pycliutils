@@ -6,6 +6,7 @@ import os
 import sys
 import yaml
 import argparse
+import psutil
 
 POWER_ICONS = {'power':'%{T3}%{T-}','reboot':'%{T3}%{T-}','lock':'%{T3}%{T-}',
         'logout':'%{T3}%{T-}', 'cancel':'%{T3}%{T-}'}
@@ -20,6 +21,20 @@ def getInterfaces():
         elif w.startswith('e'):
             interfaces['lan'].append(w)
     return interfaces
+
+def checkIfProcessRunning(processName):
+    '''
+    Check if there is any running process that contains the given name processName.
+    '''
+    #Iterate over the all the running process
+    for proc in psutil.process_iter():
+        try:
+            # Check if process name contains the given name string.
+            if processName.lower() in proc.name().lower():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
 
 def setupMonitors(exec=False):
     try:
@@ -112,6 +127,7 @@ def main():
     _connected = {}
     subprocess.call(['killall', 'polybar'])
     subprocess.Popen(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
+    WM = 'qtile' if checkIfProcessRunning('qtile') else 'i3'
     for i, monitor in enumerate(connected):
         try:
             os.environ['POLY_MONITOR'] = monitor
@@ -132,8 +148,7 @@ def main():
             for key in formats:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(formats[key])
-            o = subprocess.Popen(['polybar', '-r', os.environ['WM']])
-            #o = subprocess.Popen(['polybar', '-r', 'i3']) 
+            o = subprocess.Popen(['polybar', '-r', WM])
             _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
         except Exception as e:
             print(e)
