@@ -27,14 +27,21 @@ def checkIfProcessRunning(processName):
     Check if there is any running process that contains the given name processName.
     '''
     #Iterate over the all the running process
-    for proc in psutil.process_iter():
-        try:
-            # Check if process name contains the given name string.
-            if processName.lower() in proc.name().lower():
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
+    # for proc in psutil.process_iter():
+    #     try:
+    #         # Check if process name contains the given name string.
+    #         if processName.lower() in proc.name().lower():
+    #             return True
+    #     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+    #         pass
+    # return False
+    try:
+        procs = subprocess.check_output(f'ps aux|grep {processName}|wc', shell=True).decode().split()
+        return int(procs[0]) > 1
+    except Exception as e:
+        pass
     return False
+    
 
 def setupMonitors(exec=False):
     try:
@@ -127,7 +134,15 @@ def main():
     _connected = {}
     subprocess.call(['killall', 'polybar'])
     subprocess.Popen(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
-    WM = 'qtile' if checkIfProcessRunning('qtile') else 'i3'
+    
+    if checkIfProcessRunning('qtile'):
+        WM = 'qtile' 
+    elif checkIfProcessRunning('i3'):
+        WM = 'i3'
+    else:
+        raise Exception('Neither qtile nor i3 running')
+
+    print(f'Running WN = {WM}')
     for i, monitor in enumerate(connected):
         try:
             os.environ['POLY_MONITOR'] = monitor
