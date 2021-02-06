@@ -7,14 +7,16 @@ import json
 import pywal
 import shutil
 import cv2
+import argparse
+from pathlib import Path
 
-COLOR_MAP = {'*.foreground:':'foreground','*.background:':'background','*.cursor:':'cursorColor',
-        '*.cursorColor:':'cursorColor','*.color0:':'black', '*.color8:':'bright_black',
-        '*.color1:':'red','*.color9:':'bright_red','*.color2:':'green',
-        '*.color10:':'bright_green', '*.color3:':'yellow','*.color11:':'bright_yellow',
-        '*.color4:':'blue', '*.color12:':'bright_blue', '*.color5:':'magenta',
-        '*.color13:':'bright_magenta', '*.color6:':'cyan', '*.color14:':'bright_cyan',
-        '*.color7:':'white','*.color15:':'bright_white'}
+COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cursor:': 'cursorColor',
+             '*.cursorColor:': 'cursorColor', '*.color0:': 'black', '*.color8:': 'bright_black',
+             '*.color1:': 'red', '*.color9:': 'bright_red', '*.color2:': 'green',
+             '*.color10:': 'bright_green', '*.color3:': 'yellow', '*.color11:': 'bright_yellow',
+             '*.color4:': 'blue', '*.color12:': 'bright_blue', '*.color5:': 'magenta',
+             '*.color13:': 'bright_magenta', '*.color6:': 'cyan', '*.color14:': 'bright_cyan',
+             '*.color7:': 'white', '*.color15:': 'bright_white'}
 ALACRITTY_CONF_PATH = os.path.expanduser('~/.config/alacritty/alacritty.yml')
 X_COLORS_PATH = os.path.expanduser('~/.config/themes/.xcolors')
 WAL_COLORS_PATH = os.path.expanduser('~/.cache/wal')
@@ -22,18 +24,32 @@ THEME_PATH = os.path.expanduser('~/.config/themes/current.theme')
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
 WALLPAPER_PATH = os.path.expanduser('~/.config/themes/walls')
 
-def getTheme():
-    global COLOR_MAP, PARSED_THEME_PATH, WALLPAPER_PATH
+def symlink(theme_name):
+    if theme_name != THEME_PATH:
+        theme_path = str(Path(THEME_PATH).parent.joinpath(f'{theme_name}.theme'))
+        if os.path.exists(theme_path):
+            if os.path.exists(THEME_PATH):
+                os.remove(THEME_PATH)
+            os.symlink(theme_path, THEME_PATH)
+        else:
+            raise FileNotFoundError(theme_path)
+
+def getTheme(theme_name):
+    global COLOR_MAP, THEME_PATH, PARSED_THEME_PATH, WALLPAPER_PATH
+    
+    symlink(theme_name)
+    
     with open(os.path.expanduser(THEME_PATH), 'r') as fh:
         theme = yaml.safe_load(fh)
 
-    # get x colors and convert 
+    # get x colors and convert
     # to human readable color keys
     _term_colors = {}
     x_colors = ""
     image_path = None
-    if 'wallpaper' in theme :
-        image_path = os.path.expanduser(os.path.join(WALLPAPER_PATH,theme['wallpaper']))
+    if 'wallpaper' in theme:
+        image_path = os.path.expanduser(
+            os.path.join(WALLPAPER_PATH, theme['wallpaper']))
     if image_path is None:
         image_path = os.path.realpath(os.path.expanduser(THEME_PATH))
         image_path = os.path.basename(image_path).split('.')[0]
@@ -63,7 +79,7 @@ def getTheme():
                     _key = COLOR_MAP['*.'+key+':']
                     _term_colors[_key] = value
     else:
-        i=0
+        i = 0
         term_colors = theme['terminal_colors'].split()
         while i < len(term_colors):
             key = term_colors[i].strip()
@@ -73,15 +89,15 @@ def getTheme():
                 if key not in COLOR_MAP:
                     print(f'{key} not present in the map')
                 else:
-                    _term_colors[ COLOR_MAP[key]] = color
+                    _term_colors[COLOR_MAP[key]] = color
             i += 2
     x_colors += f"rofi.color-window: #a0{_term_colors['red'][1:]}, {_term_colors['background']}, {_term_colors['background']}\n"
     x_colors += f"rofi.color-normal: #00000000,	{_term_colors['background']}, #00000000, {_term_colors['background']}, {_term_colors['red']}"
 
-    # Write x colors to a file 
+    # Write x colors to a file
     with open(X_COLORS_PATH, 'w') as fh:
         fh.write(x_colors)
-    
+
     # remove the '#' from colors for qtile to work properly
     cleaned_term_colors = _term_colors
     # for k, v in _term_colors.items():
@@ -100,16 +116,20 @@ def getTheme():
             i = 0
             while i < 7:
                 if i < len(value):
-                    _theme["gradient"+str(i+1)+"title"] = cleaned_term_colors[ value[i] ]
-                    _theme["gradient"+str(i+1)+"body"] = cleaned_term_colors[ value[i] ]
+                    _theme["gradient" +
+                           str(i+1)+"title"] = cleaned_term_colors[value[i]]
+                    _theme["gradient" +
+                           str(i+1)+"body"] = cleaned_term_colors[value[i]]
                 else:
-                    _theme["gradient"+str(i+1)+"title"] = cleaned_term_colors[ value[-1] ]
-                    _theme["gradient"+str(i+1)+"body"] = cleaned_term_colors[ value[-1] ]
+                    _theme["gradient" +
+                           str(i+1)+"title"] = cleaned_term_colors[value[-1]]
+                    _theme["gradient" +
+                           str(i+1)+"body"] = cleaned_term_colors[value[-1]]
                 i += 1
         elif value in cleaned_term_colors:
             _theme[key] = cleaned_term_colors[value]
 
-    #set up colors if not gradients
+    # set up colors if not gradients
     if "gradient" not in theme:
         _theme['gradienttitlefg'] = _theme["titlefg"]
         _theme['gradientbodyfg'] = _theme["bodyfg"]
@@ -119,12 +139,12 @@ def getTheme():
             _theme["gradient"+str(i+1)+"body"] = _theme["bodybg"]
             i += 1
     else:
-        _theme['gradienttitlefg'] =_theme['gradientbodyfg'] = _theme['gradient']['fg'] if 'fg' in theme['gradient'] else _theme['titlefg']
+        _theme['gradienttitlefg'] = _theme['gradientbodyfg'] = _theme['gradient']['fg'] if 'fg' in theme['gradient'] else _theme['titlefg']
         del _theme['gradient']
 
-    #create colors file for vscode
+    # create colors file for vscode
     vc_colors = ["" for x in range(16)]
-    for i, name in enumerate(["black","red","green","yellow","blue","magenta","cyan","white"]):
+    for i, name in enumerate(["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]):
         vc_colors[i] = theme['terminal_colors'][name]
         vc_colors[i+8] = theme['terminal_colors']['bright_'+name]
 
@@ -139,17 +159,22 @@ def getTheme():
         yaml.dump(_theme, fh, default_flow_style=False)
     return _theme, image_path
 
+
 def main():
-    theme, wallpaper_path = getTheme()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('theme', nargs='?', default=THEME_PATH)
+    args = parser.parse_args()
+    theme, wallpaper_path = getTheme(args.theme)
 
     # appy x colors
     try:
         subprocess.call(['xrdb', '-load', X_COLORS_PATH])
-        subprocess.call(['xrdb', '-merge', os.path.expanduser('~/.Xresources')])
+        subprocess.call(
+            ['xrdb', '-merge', os.path.expanduser('~/.Xresources')])
     except subprocess.CalledProcessError as e:
         print(e)
 
-    #apply alacritty colors
+    # apply alacritty colors
     if ALACRITTY_CONF_PATH is None:
         return
     if not os.path.exists(ALACRITTY_CONF_PATH):
@@ -162,7 +187,8 @@ def main():
         if 'ground' in key:
             ala_conf['colors']['primary'][key] = theme['terminal_colors'][key]
         elif 'bright' in key:
-            ala_conf['colors']['bright'][key.split('_')[1]] = theme['terminal_colors'][key]
+            ala_conf['colors']['bright'][key.split(
+                '_')[1]] = theme['terminal_colors'][key]
         else:
             ala_conf['colors']['normal'][key] = theme['terminal_colors'][key]
     with open(ALACRITTY_CONF_PATH, 'w') as fh:
@@ -174,9 +200,11 @@ def main():
         subprocess.Popen(['feh', '--bg-fill', f'{wallpaper_path}'])
     except Exception as e:
         try:
-            subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', f'file:///{wallpaper_path}'])
+            subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background',
+                              'picture-uri', f'file:///{wallpaper_path}'])
         except Exception as e:
             print(e)
+
 
 if __name__ == '__main__':
     main()
