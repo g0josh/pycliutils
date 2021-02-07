@@ -1,14 +1,20 @@
 #!/usr/bin/python
 
-import os
 import yaml
 import subprocess
-import json
 import pywal
 import shutil
 import cv2
 import argparse
 from pathlib import Path
+from typing import Dict
+
+THEMES_PATH = Path('~/.config/themes').expanduser()
+X_COLORS_FILENAME = '.xcolors'
+PARSED_THEME_FILENAME = '.theme'
+WALLPAPER_DIRNAME = 'walls'
+WAL_COLORS_PATH = Path('~/.cache/wal/colors').expanduser()
+ALACRITTY_CONF_PATH = Path('~/.config/alacritty/alacritty.yml').expanduser()
 
 COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cursor:': 'cursorColor',
              '*.cursorColor:': 'cursorColor', '*.color0:': 'black', '*.color8:': 'bright_black',
@@ -17,98 +23,106 @@ COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cu
              '*.color4:': 'blue', '*.color12:': 'bright_blue', '*.color5:': 'magenta',
              '*.color13:': 'bright_magenta', '*.color6:': 'cyan', '*.color14:': 'bright_cyan',
              '*.color7:': 'white', '*.color15:': 'bright_white'}
-ALACRITTY_CONF_PATH = os.path.expanduser('~/.config/alacritty/alacritty.yml')
-X_COLORS_PATH = os.path.expanduser('~/.config/themes/.xcolors')
-WAL_COLORS_PATH = os.path.expanduser('~/.cache/wal')
-THEME_PATH = os.path.expanduser('~/.config/themes/current.theme')
-PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
-WALLPAPER_PATH = os.path.expanduser('~/.config/themes/walls')
 
-def symlink(theme_name):
-    if theme_name != THEME_PATH:
-        theme_path = str(Path(THEME_PATH).parent.joinpath(f'{theme_name}.theme'))
-        if os.path.exists(theme_path):
-            if os.path.exists(THEME_PATH):
-                os.remove(THEME_PATH)
-            os.symlink(theme_path, THEME_PATH)
-        else:
-            raise FileNotFoundError(theme_path)
 
-def getTheme(theme_name):
-    global COLOR_MAP, THEME_PATH, PARSED_THEME_PATH, WALLPAPER_PATH
-    
-    symlink(theme_name)
-    
-    with open(os.path.expanduser(THEME_PATH), 'r') as fh:
+def getThemeNames():
+    return [str(x).split('.')[0] for x in THEMES_PATH.rglob('*.theme')]
+
+
+def getTheme(themeName: str):
+    global THEMES_PATH
+    theme_path = THEMES_PATH.joinpath(f'{themeName}.theme')
+    if not theme_path.exists():
+        raise FileNotFoundError(theme_path)
+
+    with open(str(theme_path), 'r') as fh:
         theme = yaml.safe_load(fh)
 
-    # get x colors and convert
-    # to human readable color keys
-    _term_colors = {}
-    x_colors = ""
-    image_path = None
+    return theme
+
+
+def getWallpaperPath(theme: Dict, themeName: str):
+    global THEMES_PATH, WALLPAPER_DIRNAME
+
     if 'wallpaper' in theme:
-        image_path = os.path.expanduser(
-            os.path.join(WALLPAPER_PATH, theme['wallpaper']))
-    if image_path is None:
-        image_path = os.path.realpath(os.path.expanduser(THEME_PATH))
-        image_path = os.path.basename(image_path).split('.')[0]
-        image_path = os.path.join(WALLPAPER_PATH, image_path)
-    if os.path.exists(image_path):
-        shutil.copy2(image_path, os.path.expanduser('~/Pictures/Wallpaper'))
-        img = cv2.imread(image_path)
-        bImg = cv2.blur(img, (600, 600))
-        lImg = cv2.resize(img, (2560, 1080))
-        bSuccess, bBuffer = cv2.imencode(".jpg", bImg)
-        lSuccess, lBuffer = cv2.imencode(".jpg", lImg)
-        if bSuccess and lSuccess:
-            bBuffer.tofile(os.path.expanduser('~/Pictures/BlurredWallpaper'))
-            lBuffer.tofile(os.path.expanduser('~/Pictures/Lockscreen'))
-        else:
-            print("Error while blurring/resizing wallpaper : ", bSuccess, lSuccess)
+        imagePath1 = Path(THEMES_PATH.joinpath(
+            WALLPAPER_DIRNAME).joinpath(theme['wallpaper']))
     else:
-        raise IOError(f"{image_path} does not exist")
+        imagePath1 = THEMES_PATH.joinpath(
+            WALLPAPER_DIRNAME).joinpath(f'{themeName}.jpg')
+        imagePath2 = THEMES_PATH.joinpath(
+            WALLPAPER_DIRNAME).joinpath(f'{themeName}.png')
+    if imagePath1.exists():
+        imagePath = str(imagePath1)
+    elif imagePath2.exists():
+        imagePath = str(imagePath2)
+    else:
+        raise FileNotFoundError(imagePath1)
+
+    #  Copy to Pictures and create lockscreen image
+    shutil.copy2(imagePath, Path('~/Pictures/Wallpaper').expanduser())
+    img = cv2.imread(imagePath)
+    bImg = cv2.blur(img, (600, 600))
+    bSuccess, bBuffer = cv2.imencode(".jpg", bImg)
+    if bSuccess:
+        bBuffer.tofile(Path('~/Pictures/BlurredWallpaper').expanduser())
+    else:
+        print("Error while blurring wallpaper : ", bSuccess)
+
+    return imagePath
+
+
+def processTheme(themeName: str):
+    global COLOR_MAP, THEMES_PATH, PARSED_THEME_FILENAME, WALLPAPER_DIRNAME, X_COLORS_FILENAME
+
+    theme = getTheme(themeName)
+    imagePath = getWallpaperPath(theme, themeName)
+
+    # Get the colors from pywal or custom colors from theme file
+    termColors = {}
+    xColors = ""
+
     if theme['terminal_colors'] == 'pywal':
-        term_colors = pywal.colors.get(image_path)
+        _termColors = pywal.colors.get(imagePath)
         for k in ['special', 'colors']:
-            for key, value in term_colors[k].items():
-                x_colors += f"*.{key}: {value}\n"
+            for key, value in _termColors[k].items():
+                xColors += f"*.{key}: {value}\n"
                 if '*.'+key+':' not in COLOR_MAP:
                     print(f"*.{key}: not in color map: {COLOR_MAP}")
                 else:
                     _key = COLOR_MAP['*.'+key+':']
-                    _term_colors[_key] = value
+                    termColors[_key] = value
     else:
         i = 0
-        term_colors = theme['terminal_colors'].split()
-        while i < len(term_colors):
-            key = term_colors[i].strip()
+        _termColors = theme['terminal_colors'].split()
+        while i < len(_termColors):
+            key = _termColors[i].strip()
             if key != '!':
-                color = term_colors[i+1].strip()
-                x_colors += '{} {}\n'.format(key, color)
+                color = _termColors[i+1].strip()
+                xColors += '{} {}\n'.format(key, color)
                 if key not in COLOR_MAP:
                     print(f'{key} not present in the map')
                 else:
-                    _term_colors[COLOR_MAP[key]] = color
+                    termColors[COLOR_MAP[key]] = color
             i += 2
-    x_colors += f"rofi.color-window: #a0{_term_colors['red'][1:]}, {_term_colors['background']}, {_term_colors['background']}\n"
-    x_colors += f"rofi.color-normal: #00000000,	{_term_colors['background']}, #00000000, {_term_colors['background']}, {_term_colors['red']}"
+    xColors += f"rofi.color-window: #a0{termColors['red'][1:]}, {termColors['background']}, {termColors['background']}\n"
+    xColors += f"rofi.color-normal: #00000000,	{termColors['background']}, #00000000, {termColors['background']}, {termColors['red']}"
 
-    # Write x colors to a file
-    with open(X_COLORS_PATH, 'w') as fh:
-        fh.write(x_colors)
+    # Write x colors to file
+    with THEMES_PATH.joinpath(X_COLORS_FILENAME).open('w') as fh:
+        fh.write(xColors)
 
     # remove the '#' from colors for qtile to work properly
-    cleaned_term_colors = _term_colors
-    # for k, v in _term_colors.items():
+    cleanedTermColors = termColors
+    # for k, v in termColors.items():
     #     if isinstance(v, str) and v.startswith('#'):
     #         v = v[1:]
     #     cleaned_term_colors[k] = v
 
-    # Convert color variables to color codes
-    theme['terminal_colors'] = cleaned_term_colors
+    # Convert color variables in theme file to color codes
+    theme['terminal_colors'] = cleanedTermColors
     _theme = dict(theme)
-    _theme['wallpaper'] = image_path
+    _theme['wallpaper'] = imagePath
     for key, value in theme.items():
         if key == 'terminal_colors':
             continue
@@ -117,17 +131,17 @@ def getTheme(theme_name):
             while i < 7:
                 if i < len(value):
                     _theme["gradient" +
-                           str(i+1)+"title"] = cleaned_term_colors[value[i]]
+                           str(i+1)+"title"] = cleanedTermColors[value[i]]
                     _theme["gradient" +
-                           str(i+1)+"body"] = cleaned_term_colors[value[i]]
+                           str(i+1)+"body"] = cleanedTermColors[value[i]]
                 else:
                     _theme["gradient" +
-                           str(i+1)+"title"] = cleaned_term_colors[value[-1]]
+                           str(i+1)+"title"] = cleanedTermColors[value[-1]]
                     _theme["gradient" +
-                           str(i+1)+"body"] = cleaned_term_colors[value[-1]]
+                           str(i+1)+"body"] = cleanedTermColors[value[-1]]
                 i += 1
-        elif value in cleaned_term_colors:
-            _theme[key] = cleaned_term_colors[value]
+        elif value in cleanedTermColors:
+            _theme[key] = cleanedTermColors[value]
 
     # set up colors if not gradients
     if "gradient" not in theme:
@@ -148,62 +162,76 @@ def getTheme(theme_name):
         vc_colors[i] = theme['terminal_colors'][name]
         vc_colors[i+8] = theme['terminal_colors']['bright_'+name]
 
-        #vc_colors += theme['terminal_colors'][name] + '\n' + theme['terminal_colors']['bright_'+name] + '\n'
     vc_colors = "\n".join(vc_colors)
-    if not os.path.exists(WAL_COLORS_PATH):
-        os.makedirs(WAL_COLORS_PATH)
-    with open(os.path.join(WAL_COLORS_PATH, "colors"), 'w') as f:
+
+    if not WAL_COLORS_PATH.exists():
+        WAL_COLORS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with WAL_COLORS_PATH.open('w') as f:
         f.write(vc_colors)
 
-    with open(PARSED_THEME_PATH, 'w') as fh:
+    with THEMES_PATH.joinpath(PARSED_THEME_FILENAME).open('w') as fh:
         yaml.dump(_theme, fh, default_flow_style=False)
-    return _theme, image_path
+
+    return _theme, imagePath
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('theme', nargs='?', default=THEME_PATH)
+    parser.add_argument('theme', default='yosmite',
+                        help='The name of the theme to set, say "yosmite"')
+    parser.add_argument('--list', '-l', action='store_true',
+                        help='List the themes available')
     args = parser.parse_args()
-    theme, wallpaper_path = getTheme(args.theme)
+
+    # List themes and exit
+    if args.list:
+        print(f'Available themes: {getThemeNames()}')
+        return
+
+    theme, wallpaperPath = processTheme(args.theme)
+
+    # set wallpaper
+    print(wallpaperPath)
+    try:
+        subprocess.Popen(['feh', '--bg-fill', f'{wallpaperPath}'])
+    except Exception as e:
+        try:
+            subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background',
+                              'picture-uri', f'file:///{wallpaperPath}'])
+        except Exception as e:
+            print(e)
 
     # appy x colors
     try:
-        subprocess.call(['xrdb', '-load', X_COLORS_PATH])
         subprocess.call(
-            ['xrdb', '-merge', os.path.expanduser('~/.Xresources')])
+            ['xrdb', '-load', str(THEMES_PATH.joinpath(X_COLORS_FILENAME))])
+        subprocess.call(
+            ['xrdb', '-merge', str(Path('~/.Xresources').expanduser())])
     except subprocess.CalledProcessError as e:
         print(e)
 
     # apply alacritty colors
     if ALACRITTY_CONF_PATH is None:
         return
-    if not os.path.exists(ALACRITTY_CONF_PATH):
+
+    # Read the current file to get other configs
+    if not ALACRITTY_CONF_PATH.exists():
         print("Invalid Alacritty path : {}".format(ALACRITTY_CONF_PATH))
         return
-    with open(ALACRITTY_CONF_PATH, 'r') as fh:
-        ala_conf = yaml.safe_load(fh)
+    with ALACRITTY_CONF_PATH.open('r') as fh:
+        alaConf = yaml.safe_load(fh)
 
     for key in theme['terminal_colors']:
         if 'ground' in key:
-            ala_conf['colors']['primary'][key] = theme['terminal_colors'][key]
+            alaConf['colors']['primary'][key] = theme['terminal_colors'][key]
         elif 'bright' in key:
-            ala_conf['colors']['bright'][key.split(
+            alaConf['colors']['bright'][key.split(
                 '_')[1]] = theme['terminal_colors'][key]
         else:
-            ala_conf['colors']['normal'][key] = theme['terminal_colors'][key]
-    with open(ALACRITTY_CONF_PATH, 'w') as fh:
-        yaml.dump(ala_conf, fh, default_flow_style=False)
-
-    # set wallpaper
-    print(wallpaper_path)
-    try:
-        subprocess.Popen(['feh', '--bg-fill', f'{wallpaper_path}'])
-    except Exception as e:
-        try:
-            subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background',
-                              'picture-uri', f'file:///{wallpaper_path}'])
-        except Exception as e:
-            print(e)
+            alaConf['colors']['normal'][key] = theme['terminal_colors'][key]
+    
+    with ALACRITTY_CONF_PATH.open('w') as fh:
+        yaml.dump(alaConf, fh, default_flow_style=False)
 
 
 if __name__ == '__main__':
