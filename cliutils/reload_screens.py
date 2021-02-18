@@ -16,7 +16,7 @@ PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
 def getInterfaces():
     interfaces = {'lan':[], 'wlan':[]}
     for w in os.listdir('/sys/class/net'):
-        if w.startswith('w'):
+        if w.startswith('wl'):
             interfaces['wlan'].append(w)
         elif w.startswith('e'):
             interfaces['lan'].append(w)
