@@ -26,7 +26,7 @@ COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cu
 
 
 def getThemeNames():
-    return [str(x).split('.')[0] for x in THEMES_PATH.rglob('*.theme')]
+    return [x.stem for x in THEMES_PATH.rglob('*.theme')]
 
 
 def getTheme(themeName: str):
@@ -177,7 +177,7 @@ def processTheme(themeName: str):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('theme', default='yosmite',
+    parser.add_argument('theme', default='yosmite', nargs='?',
                         help='The name of the theme to set, say "yosmite"')
     parser.add_argument('--list', '-l', action='store_true',
                         help='List the themes available')
