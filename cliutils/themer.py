@@ -26,7 +26,7 @@ COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cu
 
 
 def getThemeNames():
-    return [x.stem for x in THEMES_PATH.rglob('*.theme')]
+    return [x.stem for x in THEMES_PATH.glob('*.theme') if x.name not in ['.theme', 'current.theme']]
 
 
 def getTheme(themeName: str):
