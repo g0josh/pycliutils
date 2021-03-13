@@ -1,4 +1,4 @@
-#!/usr/bin/python
+v#!/usr/bin/python
 
 import yaml
 import subprocess
@@ -175,20 +175,13 @@ def processTheme(themeName: str):
     return _theme, imagePath
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('theme', default='yosmite', nargs='?',
-                        help='The name of the theme to set, say "yosmite"')
-    parser.add_argument('--list', '-l', action='store_true',
-                        help='List the themes available')
-    args = parser.parse_args()
-
+def main(theme='yosmite', list=False):
     # List themes and exit
-    if args.list:
+    if list:
         print(f'Available themes: {getThemeNames()}')
         return
 
-    theme, wallpaperPath = processTheme(args.theme)
+    theme, wallpaperPath = processTheme(theme)
 
     # set wallpaper
     print(wallpaperPath)
@@ -233,6 +226,14 @@ def main():
     with ALACRITTY_CONF_PATH.open('w') as fh:
         yaml.dump(alaConf, fh, default_flow_style=False)
 
+def _cliEntry():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('theme', default='yosmite', nargs='?',
+                        help='The name of the theme to set, say "yosmite"')
+    parser.add_argument('--list', '-l', action='store_true',
+                        help='List the themes available')
+    args = parser.parse_args()
+    main(args.theme, args.list)
 
 if __name__ == '__main__':
-    main()
+    _cliEntry()

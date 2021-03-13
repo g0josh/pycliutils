@@ -37,8 +37,9 @@ def checkIfProcessRunning(processName):
     # return False
     try:
         procs = subprocess.check_output(f'ps aux|grep {processName}|wc', shell=True).decode().split()
+        print(procs)
         return int(procs[0]) > 1
-    except Exception as e:
+    except:
         pass
     return False
     
@@ -76,13 +77,9 @@ def setupMonitors(exec=False):
             print(e.output.decode().strip())
     return connected
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--exec-xrandr", "-x", action='store_true', help="Discover and setup monitors")
-    parser.add_argument('--theme-path', '-t', type=str, default=PARSED_THEME_PATH, help="Path to the parsed theme file")
-    args = parser.parse_args()
+def main(theme_path=PARSED_THEME_PATH, exec_xrandr=False, wm='qtile'):
 
-    with open(args.theme_path, 'r') as fh:
+    with open(theme_path, 'r') as fh:
         theme = yaml.safe_load(fh)
     if 'occupiedbg' not in theme:
         theme['occupiedbg'] = theme['bodybg']
@@ -130,19 +127,12 @@ def main():
     poly_vars['logout']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["logout"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     poly_vars['lock']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["lock"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     interfaces = getInterfaces()
-    connected = setupMonitors(args.exec_xrandr)
+    connected = setupMonitors(exec_xrandr)
     _connected = {}
     subprocess.call(['killall', 'polybar'])
     subprocess.Popen(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
-    
-    if checkIfProcessRunning('qtile'):
-        WM = 'qtile' 
-    elif checkIfProcessRunning('i3'):
-        WM = 'i3'
-    else:
-        raise Exception('Neither qtile nor i3 running')
 
-    print(f'Running WN = {WM}')
+    print(f'Running WN = {wm}')
     for i, monitor in enumerate(connected):
         try:
             os.environ['POLY_MONITOR'] = monitor
@@ -163,7 +153,7 @@ def main():
             for key in formats:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(formats[key])
-            o = subprocess.Popen(['polybar', '-r', WM])
+            o = subprocess.Popen(['polybar', '-r', wm])
             _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
         except Exception as e:
             print(e)
@@ -171,5 +161,14 @@ def main():
         yaml.dump({'formats':formats,
             'screens':_connected,'separator':theme['moduleseparator']}, fh)
 
+def _cliEntry():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--exec-xrandr", "-x", action='store_true', help="Discover and setup monitors")
+    parser.add_argument('--theme-path', '-t', type=str, default=PARSED_THEME_PATH, help="Path to the parsed theme file")
+    parser.add_argument('--wm', '-w', type=str, default='qtile', help="Either qtile or i3")
+    args = parser.parse_args()
+    main(args.theme_path, args.exec_xrandr, args.wm)
+
+
 if __name__ == '__main__':
-    main()
+    _cliEntry()

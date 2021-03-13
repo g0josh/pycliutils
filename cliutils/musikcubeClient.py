@@ -153,19 +153,20 @@ async def start():
         cmdListener("localhost", CMD_SERVER_PORT)
     )
 
-
-def main():
+def main(callback_script=None, update_interval=5):
     global callback, TRACK_UPDATE_INTERVAL
+    callback = callback_script
+    TRACK_UPDATE_INTERVAL = update_interval
+    asyncio.run(start())
+
+def _cliEntry():
     parser = ArgumentParser(description="CLI for Musikcube")
     parser.add_argument('--updated-callback', '-c', default=callback,
                         help='Run any sh command when an update is recieved')
     parser.add_argument('--update-interval', '-u', default=TRACK_UPDATE_INTERVAL, type=int,
                         help=f'How often to get updates(in seconds). Default is {TRACK_UPDATE_INTERVAL}')
     args = parser.parse_args()
-    callback = args.updated_callback
-    TRACK_UPDATE_INTERVAL = args.update_interval
-    asyncio.run(start())
-
+    main(args.updated_callback, args.update_interval)
 
 if __name__ == '__main__':
-    main()
+    _cliEntry()

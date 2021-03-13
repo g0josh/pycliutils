@@ -10,16 +10,7 @@ from libqtile.command_client import InteractiveCommandClient as Client
 LAYOUT_ICONS = {'columns':'HHH','monadtall':'[]=',
         'monadwide':'TTT','max':'[ ]','treetab':'|[]'}
 
-def _main():
-    parser = argparse.ArgumentParser(description="Get or set qtile workspaces")
-    parser.add_argument("cmd", type=str, help="command can be 'get' or 'set'")
-    parser.add_argument("--pid", "-p", type=str, help="Gets the workspace status for the screen displaying polybar with this pid. Should be passed with 'get' command"),
-    parser.add_argument("--ws", "-w", type=str, help="Sets this workspace as active on current screen. Should be passed with 'set' command"),
-    args = parser.parse_args()
-    cmd = args.cmd
-    pid = args.pid
-    set_ws = args.ws
-
+def main(cmd, pid=None, set_ws=None):
     client = Client()
     groups = client.groups()
     curr_group = client.group.info()
@@ -74,9 +65,14 @@ def _main():
         except subprocess.CalledProcessError as e:
             print(e)
 
-def main():
-    print(_main())
+def _cliEntry():
+    parser = argparse.ArgumentParser(description="Get or set qtile workspaces")
+    parser.add_argument("cmd", type=str, help="command can be 'get' or 'set'")
+    parser.add_argument("--pid", "-p", type=str, help="Gets the workspace status for the screen displaying polybar with this pid. Should be passed with 'get' command"),
+    parser.add_argument("--ws", "-w", type=str, help="Sets this workspace as active on current screen. Should be passed with 'set' command"),
+    args = parser.parse_args()
+    print(main(args.cmd, args.pid, args.ws))
 
 if __name__ == '__main__':
-    print(_main())
+    print(_cliEntry())
 
