@@ -8,13 +8,14 @@ import yaml
 import argparse
 import psutil
 
-POWER_ICONS = {'power':'%{T3}%{T-}','reboot':'%{T3}%{T-}','lock':'%{T3}%{T-}',
-        'logout':'%{T3}%{T-}', 'cancel':'%{T3}%{T-}'}
+POWER_ICONS = {'power': '%{T3}%{T-}', 'reboot': '%{T3}%{T-}', 'lock': '%{T3}%{T-}',
+               'logout': '%{T3}%{T-}', 'cancel': '%{T3}%{T-}'}
 POLY_INFO_PATH = '/tmp/polybar_info'
 PARSED_THEME_PATH = os.path.expanduser('~/.config/themes/.theme')
 
+
 def getInterfaces():
-    interfaces = {'lan':[], 'wlan':[]}
+    interfaces = {'lan': [], 'wlan': []}
     for w in os.listdir('/sys/class/net'):
         if w.startswith('wl'):
             interfaces['wlan'].append(w)
@@ -22,11 +23,12 @@ def getInterfaces():
             interfaces['lan'].append(w)
     return interfaces
 
+
 def checkIfProcessRunning(processName):
     '''
     Check if there is any running process that contains the given name processName.
     '''
-    #Iterate over the all the running process
+    # Iterate over the all the running process
     # for proc in psutil.process_iter():
     #     try:
     #         # Check if process name contains the given name string.
@@ -36,13 +38,14 @@ def checkIfProcessRunning(processName):
     #         pass
     # return False
     try:
-        procs = subprocess.check_output(f'ps aux|grep {processName}|wc', shell=True).decode().split()
+        procs = subprocess.check_output(
+            f'ps aux|grep {processName}|wc', shell=True).decode().split()
         print(procs)
         return int(procs[0]) > 1
     except:
         pass
     return False
-    
+
 
 def setupMonitors(exec=False):
     try:
@@ -54,7 +57,7 @@ def setupMonitors(exec=False):
     cmd = ["xrandr"]
     connected = []
     x = 0
-    for i,e in enumerate(o.split('\n')):
+    for i, e in enumerate(o.split('\n')):
         if not 'connected' in e:
             continue
 
@@ -62,7 +65,7 @@ def setupMonitors(exec=False):
         if ' connected' in e:
             res = o.split('\n')[i+1].strip().split()[0]
             cmd += ['--output', name, '--mode', res,
-                '--pos', "{}x{}".format(x, 0), '--rotate', 'normal']
+                    '--pos', "{}x{}".format(x, 0), '--rotate', 'normal']
             x += int(res.split('x')[0])
             connected.append(name)
         elif 'disconnected' in e:
@@ -76,6 +79,7 @@ def setupMonitors(exec=False):
         except subprocess.CalledProcessError as e:
             print(e.output.decode().strip())
     return connected
+
 
 def main(theme_path=PARSED_THEME_PATH, exec_xrandr=False, wm='qtile'):
 
@@ -110,28 +114,30 @@ def main(theme_path=PARSED_THEME_PATH, exec_xrandr=False, wm='qtile'):
     formats['occupiedWs'] = f'%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["occupiedbg"]}}}%{{F{theme["occupiedfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["occupiedbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['visibleWsOther'] = f'%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["altbg"]}}}%{{F{theme["altfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["altbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['urgentWs'] = f'%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["urgentbg"]}}}%{{F{theme["urgentfg"]}}}{" "*theme["wspadding"]}%{{T3}}%name% %icon%%{{T-}}{" "*theme["wspadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["urgentbg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
-    
+
     formats['musicTitle'] = f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     formats['timeTitle'] = f'%{{B{theme["background"]}}}%{{F{theme["titlebg"]}}}{theme["leftmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["titlebg"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{theme["bodybg"]}}}%{{F{theme["titlebg"]}}}{theme["leftmodulesuffix"]}%{{F-}}%{{B-}}'
     bg = theme['gradient3title'] if 'gradient3title' in theme else theme['titlebg']
+    bodyBg = theme['gradient3body'] if 'gradient3body' in theme else theme['bodybg']
     fg = theme['gradienttitlefg'] if 'gradienttitlefg' in theme else theme['titlefg']
-    formats['utilizationTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['utilizationTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bodyBg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     bg = theme['gradient4title'] if 'gradient4title' in theme else theme['titlebg']
-    formats['temperatureTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    formats['temperatureTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bodyBg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
 
     poly_vars = {}
     # power menu widgets
-    poly_vars["poweropen"]= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{POWER_ICONS["power"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B#00000000}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
-    poly_vars['powerclose']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{POWER_ICONS["cancel"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B#00000000}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
-    poly_vars['reboot']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["reboot"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
-    poly_vars['poweroff']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["power"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
-    poly_vars['logout']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["logout"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
-    poly_vars['lock']= f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["lock"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars["poweropen"] = f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{POWER_ICONS["power"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B#00000000}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars['powerclose'] = f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["titlepadding"]}{POWER_ICONS["cancel"]}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B#00000000}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars['reboot'] = f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["reboot"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars['poweroff'] = f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["power"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars['logout'] = f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["logout"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
+    poly_vars['lock'] = f'%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{theme["gradient7title"]}}}%{{F{theme["titlefg"]}}}{" "*theme["bodypadding"]}{POWER_ICONS["lock"]}{" "*theme["bodypadding"]}%{{F-}}%{{B-}}%{{B{theme["background"]}}}%{{F{theme["gradient7title"]}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     interfaces = getInterfaces()
     connected = setupMonitors(exec_xrandr)
     _connected = {}
     subprocess.call(['killall', 'polybar'])
-    subprocess.Popen(["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
+    subprocess.Popen(
+        ["feh", "--bg-fill", os.path.expanduser("~/Pictures/Wallpaper"), "--no-fehbg"])
 
     print(f'Running WN = {wm}')
     for i, monitor in enumerate(connected):
@@ -147,7 +153,7 @@ def main(theme_path=PARSED_THEME_PATH, exec_xrandr=False, wm='qtile'):
                 os.environ[f'POLY_WLAN{index+1}'] = wlan
             for index, lan in enumerate(interfaces['lan']):
                 os.environ[f'POLY_LAN{index+1}'] = lan
-                
+
             for key in theme:
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(theme[key])
@@ -155,18 +161,22 @@ def main(theme_path=PARSED_THEME_PATH, exec_xrandr=False, wm='qtile'):
                 _key = str('POLY_'+key.upper())
                 os.environ[_key] = str(formats[key])
             o = subprocess.Popen(['polybar', '-r', wm])
-            _connected[str(i)] = {'name':monitor, 'pid':str(o.pid)}
+            _connected[str(i)] = {'name': monitor, 'pid': str(o.pid)}
         except Exception as e:
             print(e)
     with open(POLY_INFO_PATH, 'w') as fh:
-        yaml.dump({'formats':formats,
-            'screens':_connected,'separator':theme['moduleseparator']}, fh)
+        yaml.dump({'formats': formats,
+                   'screens': _connected, 'separator': theme['moduleseparator']}, fh)
+
 
 def _cliEntry():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exec-xrandr", "-x", action='store_true', help="Discover and setup monitors")
-    parser.add_argument('--theme-path', '-t', type=str, default=PARSED_THEME_PATH, help="Path to the parsed theme file")
-    parser.add_argument('--wm', '-w', type=str, default='qtile', help="Either qtile or i3")
+    parser.add_argument("--exec-xrandr", "-x",
+                        action='store_true', help="Discover and setup monitors")
+    parser.add_argument('--theme-path', '-t', type=str,
+                        default=PARSED_THEME_PATH, help="Path to the parsed theme file")
+    parser.add_argument('--wm', '-w', type=str,
+                        default='qtile', help="Either qtile or i3")
     args = parser.parse_args()
     main(args.theme_path, args.exec_xrandr, args.wm)
 
