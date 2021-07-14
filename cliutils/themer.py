@@ -50,8 +50,8 @@ def getWallpaperPath(theme: Dict, themeName: str):
     else:
         imagePath1 = THEMES_PATH.joinpath(
             WALLPAPER_DIRNAME).joinpath(f'{themeName}.jpg')
-        imagePath2 = THEMES_PATH.joinpath(
-            WALLPAPER_DIRNAME).joinpath(f'{themeName}.png')
+    imagePath2 = THEMES_PATH.joinpath(
+        WALLPAPER_DIRNAME).joinpath(f'{themeName}.png')
     if imagePath1.exists():
         imagePath = str(imagePath1)
     elif imagePath2.exists():
