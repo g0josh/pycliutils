@@ -162,6 +162,9 @@ def processTheme(themeName: str):
         vc_colors[i] = theme['terminal_colors'][name]
         vc_colors[i+8] = theme['terminal_colors']['bright_'+name]
 
+    # Use background color instead black color
+    vc_colors[0] = theme['terminal_colors']['background']
+
     vc_colors = "\n".join(vc_colors)
 
     if not WAL_COLORS_PATH.exists():
