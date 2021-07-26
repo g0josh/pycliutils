@@ -122,6 +122,7 @@ def main(theme_path=PARSED_THEME_PATH, exec_xrandr=False, wm='qtile'):
     fg = theme['gradienttitlefg'] if 'gradienttitlefg' in theme else theme['titlefg']
     formats['utilizationTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bodyBg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
     bg = theme['gradient4title'] if 'gradient4title' in theme else theme['titlebg']
+    bodyBg = theme['gradient4body'] if 'gradient4body' in theme else theme['bodybg']
     formats['temperatureTitle'] = f'%{{B{theme["background"]}}}%{{F{bg}}}{theme["rightmoduleprefix"]}%{{F-}}%{{B-}}%{{B{bg}}}%{{F{fg}}}{" "*theme["titlepadding"]}%{{T3}}%{{T-}}{" "*theme["titlepadding"]}%{{F-}}%{{B-}}%{{B{bodyBg}}}%{{F{bg}}}{theme["rightmodulesuffix"]}%{{F-}}%{{B-}}'
 
     poly_vars = {}
