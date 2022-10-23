@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import yaml
+import json
 import subprocess
 import pywal
 import shutil
@@ -13,7 +14,9 @@ THEMES_PATH = Path('~/.config/themes').expanduser()
 X_COLORS_FILENAME = '.xcolors'
 PARSED_THEME_FILENAME = '.theme'
 WALLPAPER_DIRNAME = 'walls'
-WAL_COLORS_PATH = Path('~/.cache/wal/colors').expanduser()
+WAL_COLORS_PATH = Path('~/.cache/wal').expanduser()
+VSCODE_FILENAME = 'colors'
+FIREFOX_FILENAME = 'colors.json'
 ALACRITTY_CONF_PATH = Path('~/.config/alacritty/alacritty.yml').expanduser()
 
 COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cursor:': 'cursorColor',
@@ -23,6 +26,14 @@ COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cu
              '*.color4:': 'blue', '*.color12:': 'bright_blue', '*.color5:': 'magenta',
              '*.color13:': 'bright_magenta', '*.color6:': 'cyan', '*.color14:': 'bright_cyan',
              '*.color7:': 'white', '*.color15:': 'bright_white'}
+COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cursor:': 'cursorColor',
+             '*.cursorColor:': 'cursorColor', '*.color0:': 'black', '*.color8:': 'bright_black',
+             '*.color1:': 'red', '*.color9:': 'bright_red', '*.color2:': 'green',
+             '*.color10:': 'bright_green', '*.color3:': 'yellow', '*.color11:': 'bright_yellow',
+             '*.color4:': 'blue', '*.color12:': 'bright_blue', '*.color5:': 'magenta',
+             '*.color13:': 'bright_magenta', '*.color6:': 'cyan', '*.color14:': 'bright_cyan',
+             '*.color7:': 'white', '*.color15:': 'bright_white'}
+
 
 
 def getThemeNames():
@@ -73,7 +84,7 @@ def getWallpaperPath(theme: Dict, themeName: str):
 
 
 def processTheme(themeName: str):
-    global COLOR_MAP, THEMES_PATH, PARSED_THEME_FILENAME, WALLPAPER_DIRNAME, X_COLORS_FILENAME
+    # global COLOR_MAP, THEMES_PATH, PARSED_THEME_FILENAME, WALLPAPER_DIRNAME, X_COLORS_FILENAME, V
 
     theme = getTheme(themeName)
     imagePath = getWallpaperPath(theme, themeName)
@@ -81,11 +92,12 @@ def processTheme(themeName: str):
     # Get the colors from pywal or custom colors from theme file
     termColors = {}
     xColors = ""
+    walColors = {'wallpaper': imagePath, 'alpha': 100, 'special':{}, 'colors':{}} 
 
     if theme['terminal_colors'] == 'pywal':
-        _termColors = pywal.colors.get(imagePath)
+        walColors = pywal.colors.get(imagePath)
         for k in ['special', 'colors']:
-            for key, value in _termColors[k].items():
+            for key, value in walColors[k].items():
                 xColors += f"*.{key}: {value}\n"
                 if '*.'+key+':' not in COLOR_MAP:
                     print(f"*.{key}: not in color map: {COLOR_MAP}")
@@ -104,6 +116,12 @@ def processTheme(themeName: str):
                     print(f'{key} not present in the map')
                 else:
                     termColors[COLOR_MAP[key]] = color
+                    if 'foreground' in key or 'background' in key:
+                        walColors['special'][key[2:]] = color
+                    elif 'cursor' in key:
+                        walColors['special']['cursor'] = color
+                    else:
+                        walColors['colors'][key[2:]] = color
             i += 2
     xColors += f"rofi.color-window: #a0{termColors['red'][1:]}, {termColors['background']}, {termColors['background']}\n"
     xColors += f"rofi.color-normal: #00000000,	{termColors['background']}, #00000000, {termColors['background']}, {termColors['red']}"
@@ -169,8 +187,10 @@ def processTheme(themeName: str):
 
     if not WAL_COLORS_PATH.exists():
         WAL_COLORS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with WAL_COLORS_PATH.open('w') as f:
+    with Path(WAL_COLORS_PATH/VSCODE_FILENAME).open('w') as f:
         f.write(vc_colors)
+    with Path(WAL_COLORS_PATH/FIREFOX_FILENAME).open('w') as f:
+        f.write(json.dumps(walColors))
 
     with THEMES_PATH.joinpath(PARSED_THEME_FILENAME).open('w') as fh:
         yaml.dump(_theme, fh, default_flow_style=False)
