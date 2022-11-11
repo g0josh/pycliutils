@@ -26,14 +26,6 @@ COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cu
              '*.color4:': 'blue', '*.color12:': 'bright_blue', '*.color5:': 'magenta',
              '*.color13:': 'bright_magenta', '*.color6:': 'cyan', '*.color14:': 'bright_cyan',
              '*.color7:': 'white', '*.color15:': 'bright_white'}
-COLOR_MAP = {'*.foreground:': 'foreground', '*.background:': 'background', '*.cursor:': 'cursorColor',
-             '*.cursorColor:': 'cursorColor', '*.color0:': 'black', '*.color8:': 'bright_black',
-             '*.color1:': 'red', '*.color9:': 'bright_red', '*.color2:': 'green',
-             '*.color10:': 'bright_green', '*.color3:': 'yellow', '*.color11:': 'bright_yellow',
-             '*.color4:': 'blue', '*.color12:': 'bright_blue', '*.color5:': 'magenta',
-             '*.color13:': 'bright_magenta', '*.color6:': 'cyan', '*.color14:': 'bright_cyan',
-             '*.color7:': 'white', '*.color15:': 'bright_white'}
-
 
 
 def getThemeNames():
@@ -116,7 +108,7 @@ def processTheme(themeName: str):
                     print(f'{key} not present in the map')
                 else:
                     termColors[COLOR_MAP[key]] = color
-                    if 'foreground' in key or 'background' in key:
+                    if 'background' in key or 'foreground' in key:
                         walColors['special'][key[2:]] = color
                     elif 'cursor' in key:
                         walColors['special']['cursor'] = color
@@ -190,7 +182,7 @@ def processTheme(themeName: str):
     with Path(WAL_COLORS_PATH/VSCODE_FILENAME).open('w') as f:
         f.write(vc_colors)
     with Path(WAL_COLORS_PATH/FIREFOX_FILENAME).open('w') as f:
-        f.write(json.dumps(walColors))
+        json.dump(walColors, f, indent=4)
 
     with THEMES_PATH.joinpath(PARSED_THEME_FILENAME).open('w') as fh:
         yaml.dump(_theme, fh, default_flow_style=False)
@@ -201,7 +193,7 @@ def processTheme(themeName: str):
 def main(theme='yosmite', list=False):
     # List themes and exit
     if list:
-        print(f'Available themes: {getThemeNames()}')
+        print(f'Available themes: {", ".join(getThemeNames())}')
         return
 
     theme, wallpaperPath = processTheme(theme)
@@ -213,9 +205,15 @@ def main(theme='yosmite', list=False):
     except Exception as e:
         try:
             subprocess.Popen(['gsettings', 'set', 'org.gnome.desktop.background',
-                              'picture-uri', f'file:///{wallpaperPath}'])
+                              'picture-uri-dark', f'file:///{wallpaperPath}'])
         except Exception as e:
             print(e)
+
+    # reload firefox
+    try:
+        subprocess.Popen(['pywalfox', 'update'])
+    except Exception as e:
+        print(e)
 
     # appy x colors
     try:
